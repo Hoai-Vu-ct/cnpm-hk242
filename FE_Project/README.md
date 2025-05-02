@@ -1,12 +1,49 @@
-# React + Vite
+# CNPM-HK242 Frontend Project
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Đây là dự án frontend được xây dựng với Vite và React cho ứng dụng web.
 
-Currently, two official plugins are available:
+## Cài đặt
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. Clone repository:
+```
+git clone https://github.com/[username]/cnpm-hk242.git
+cd cnpm-hk242/FE_Project
+```
 
-## Expanding the ESLint configuration
+2. Cài đặt các thư viện:
+```
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+3. Chạy dự án:
+```
+npm run dev
+```
+
+## Cấu trúc dự án
+
+- `/src`: Chứa mã nguồn chính của ứng dụng
+  - `/components`: Các component tái sử dụng
+  - `/pages`: Các trang của ứng dụng (Home, Login, CheckIn)
+  - `/assets`: Hình ảnh, icons và tài nguyên khác
+  - `/utils`: Các hàm tiện ích
+  - `main.jsx`: Điểm khởi đầu của ứng dụng
+
+## Tính năng
+
+- **Trang chủ**: Hiển thị thông tin chính của ứng dụng
+- **Đăng nhập**: Xác thực người dùng
+- **Check-in**: Chức năng điểm danh/check-in
+
+## Các lệnh
+
+- `npm run dev`: Chạy môi trường phát triển
+- `npm run build`: Build dự án cho production
+- `npm run preview`: Xem trước bản build
+
+## Công nghệ sử dụng
+
+- React
+- Vite
+- React Router
+- [Các thư viện khác]
