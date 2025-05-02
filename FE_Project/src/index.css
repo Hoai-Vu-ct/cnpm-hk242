@@ -1,0 +1,491 @@
+/* === TOÀN BỘ NỘI DUNG CHO src/index.css === */
+
+/* Update the font import to include more weights if needed */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Reset và base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif; /* Apply Poppins to all elements */
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    background-color: #f4f7f6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Make sure body takes full viewport height */
+    line-height: 1.6;
+    margin: 0; /* Ensure no default margins */
+}
+
+/* Ensure inputs, buttons, and selects have the same font */
+input, 
+button, 
+select, 
+textarea, 
+option {
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Ensure #root element takes full height */
+#root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Full viewport height */
+    width: 100%;
+    margin: 0; /* Override any existing margin */
+    padding: 0; /* Override any existing padding */
+}
+
+/* Header styles */
+.header {
+    background-color: #87CEEB;
+    padding: 8px 0;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+/* Update header navigation links */
+.nav-menu {
+    display: flex;
+    gap: 35px; /* Tăng từ 20px lên 35px để tạo khoảng cách lớn hơn */
+    align-items: center;
+    text-align: left; /* Ensure text is left-aligned */
+}
+
+.nav-menu a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem; /* Increase font size from default */
+    font-weight: 500;
+    padding: 8px 0;
+    position: relative;
+    text-align: left; /* Ensure text is left-aligned */
+}
+
+.nav-menu a:hover {
+    opacity: 0.8;
+}
+
+/* Active link style */
+.nav-menu a.active {
+    font-weight: 600;
+    font-size: 1.2rem; /* Make active link slightly larger */
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    background-color: white;
+    border-radius: 20px;
+    padding: 3px 10px;
+}
+
+.user-icon {
+    color: #87CEEB;
+    font-size: 1.1rem;
+    margin-left: 5px;
+}
+
+/* Main content */
+.main-content {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    flex: 1 0 auto; /* This makes it grow and push footer down */
+    display: flex;
+    flex-direction: column;
+}
+
+.content-top {
+    width: 100%;
+}
+
+.page-title {
+    font-weight: bold;
+    margin-bottom: 25px;
+    font-size: 1.2em;
+}
+
+/* Booking filters */
+.filters-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 40px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Co giãn đều */
+    min-width: 180px;
+}
+
+.filter-label {
+    font-weight: bold;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 12px 30px 12px 15px; /* Tăng padding phải cho mũi tên */
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-color: white;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23666666%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.6-3.6%205.4-7.9%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+    background-repeat: no-repeat;
+    background-position: right 15px top 50%;
+    background-size: .65em auto;
+}
+/* Bỏ ::after nếu đã dùng background-image */
+/* .select-wrapper::after { ... } */
+
+/* Spacer để đẩy nút/footer xuống dưới */
+.spacer {
+    flex-grow: 1; /* Quan trọng */
+    min-height: 20px;
+}
+
+/* Booking button */
+.booking-btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.booking-btn {
+    background-color: #87CEEB;
+    color: white;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.2rem;
+    border-radius: 25px;
+    width: 100%;
+    max-width: 500px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-weight: 500;
+}
+.booking-btn:hover {
+    background-color: #76bde0;
+}
+
+
+/* Footer */
+.footer {
+    background-color: #87CEEB;
+    color: white;
+    padding: 40px 0;
+    width: 100%;
+    margin-top: auto; /* Push to bottom if content is shorter than viewport */
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    padding: 0 20px;
+}
+
+.footer-logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.footer-column h3 {
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.footer-column ul {
+    list-style: none;
+}
+
+.footer-column li {
+    margin-bottom: 10px;
+}
+
+.footer-column a {
+    color: white;
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+.footer-column a:hover {
+    text-decoration: underline;
+}
+.footer-column p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+.social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.social-icons a {
+    display: inline-flex; /* Dùng flex để căn giữa nội dung bên trong nếu là SVG */
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
+    background-color: white;
+    color: #87CEEB;
+    text-align: center;
+    line-height: 24px; /* Giữ lại cho text */
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+}
+
+/* Styles for check-in page */
+.breadcrumb {
+    margin-bottom: 25px;
+    padding-left: 0;
+    font-size: 0.9rem;
+    color: #555;
+    text-align: center; /* Căn giữa breadcrumb */
+}
+.breadcrumb a {
+    color: #007bff;
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+.breadcrumb span { /* Style cho dấu phân cách hoặc trang hiện tại */
+    margin: 0 5px;
+}
+
+.instruction-text {
+    margin: 0 auto 30px auto;
+    font-size: 1.1rem;
+    max-width: 500px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.qr-code-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 40px 0;
+}
+
+.qr-code {
+    width: 300px; /* Tăng kích thước từ 250px lên 300px */
+    height: 300px; /* Tăng kích thước từ 250px lên 300px */
+    border: 5px solid #eee;
+    padding: 10px;
+    background-color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Thêm bóng đổ nhẹ */
+}
+
+.qr-code img { /* Đảm bảo ảnh QR chiếm đúng không gian */
+    max-width: 100%;
+    max-height: 100%;
+    display: block; /* Bỏ khoảng trắng dưới ảnh */
+}
+
+.additional-info {
+    text-align: center;
+    margin: 30px auto 40px auto;
+    font-size: 1rem;
+    color: #555;
+}
+
+/* --- Login Page Styles --- */
+.login-page-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #87CEEB; /* Màu nền xanh như trong hình */
+    padding: 20px;
+}
+
+.login-container {
+    background-color: white;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-container h1 {
+    font-size: 32px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 30px;
+}
+
+.login-container .input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.login-container .input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #666;
+    font-size: 16px;
+}
+
+.login-container .input-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    font-size: 16px;
+}
+
+.login-container .forgot-password {
+    text-align: right;
+    margin-bottom: 25px;
+}
+
+.login-container .forgot-password a {
+    color: #888;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.login-container .forgot-password a:hover {
+    text-decoration: underline;
+}
+
+.login-container .login-button {
+    background-color: #8CB4F5; /* Màu xanh dương như trong hình */
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    transition: background-color 0.3s;
+}
+
+.login-container .login-button:hover {
+    background-color: #78A1E0;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .filters-container {
+        gap: 15px;
+    }
+    .filter-group {
+        min-width: calc(50% - 10px); /* 2 cột */
+        flex-grow: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .nav-menu {
+        gap: 25px; /* Giảm khoảng cách một chút trên màn hình nhỏ hơn nhưng vẫn rộng hơn ban đầu */
+    }
+    .nav-menu a {
+        margin-left: 0; /* Bỏ margin-left vì chúng ta đã dùng gap */
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .header-content {
+        flex-direction: column;
+        padding: 10px;
+        align-items: stretch; /* Cho các phần tử con giãn ra */
+    }
+    .nav-menu {
+        margin-top: 10px;
+        margin-left: 0;
+        justify-content: center; /* Căn giữa các link */
+        flex-wrap: wrap;
+    }
+    .nav-menu a {
+        margin: 5px 15px; /* Tăng margin horizontal từ 10px lên 15px */
+    }
+    .user-profile {
+        margin-top: 10px;
+        align-self: center; /* Căn giữa user profile */
+    }
+    .footer-content {
+       grid-template-columns: 1fr;
+       text-align: center;
+    }
+    .footer-column p {
+        text-align: center; /* Căn giữa cả text trong footer */
+    }
+    .social-icons {
+       justify-content: center;
+    }
+    .login-container {
+        width: 90%;
+        padding: 30px 20px;
+    }
+    .login-container h1 {
+        font-size: 2em;
+    }
+    .page-title {
+        font-size: 1.1em; /* Giảm cỡ chữ tiêu đề trang */
+    }
+    .booking-btn {
+        font-size: 1.1rem; /* Giảm cỡ chữ nút */
+    }
+}
+
+/* === KẾT THÚC CSS === */
