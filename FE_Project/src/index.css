@@ -488,4 +488,204 @@ option {
     }
 }
 
+/*RoomPage Styles */
+.roompage-content {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    width: 100%;
+  }
+  
+  .room-images {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    flex: 2;
+    height: 300px; /* Đặt chiều cao cố định cho container */
+  }
+  
+  .main-image {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+    height: 100%;
+    background-color: #e0e0e0;
+    border-radius: 8px;
+  }
+  
+  .small-image {
+    height: 100%; /* Sử dụng 100% chiều cao của ô lưới */
+    background-color: #e0e0e0;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .more-photos {
+    background-color: #e0e0e0;
+    color: #555;
+    font-weight: normal;
+  }
+  
+  .more-photos strong {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .more-photos span {
+    font-size: 14px;
+  }
+  
+  .info-box {
+    flex: 1;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .info-box h3 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    color: #333;
+  }
+  
+  .time-range {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #333;
+  }
+  
+  .remaining-time {
+    font-size: 14px;
+    color: #777;
+    margin-bottom: 40px;
+  }
+  
+  /* Reusing the existing booking-btn class but adjusting it for our context */
+  .info-box .booking-btn {
+    margin-top: auto;
+    margin-bottom: 20px;
+  }
+  
+  .info-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .info-links span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  /* Adjust breadcrumb to match design */
+  .breadcrumb {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    color: #555;
+    font-size: 14px;
+    text-align: left;
+  }
+  
+  /* For responsive design */
+  @media (max-width: 768px) {
+    .roompage-content {
+      flex-direction: column;
+    }
+    
+    .room-images {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto;
+      height: auto; /* Cho phép chiều cao tự động co giãn trên thiết bị di động */
+    }
+    
+    .main-image {
+      grid-column: 1 / 3;
+      grid-row: 1 / 2;
+      height: 200px;
+    }
+    
+    .small-image {
+      height: 140px; /* Đặt chiều cao cố định cho các ảnh nhỏ trên mobile */
+    }
+  }
+
+
+  /* history */
+  .history-container {
+    padding: 80px 32px 32px 32px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .breadcrumb {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 24px;
+  }
+  
+  .breadcrumb-bold {
+    font-weight: bold;
+    color: #000;
+  }
+  
+  .tabs {
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 24px;
+  }
+  
+  .tab-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    padding: 12px 8px;
+    cursor: pointer;
+    color: #333;
+    position: relative;
+  }
+  
+  .tab-button.active {
+    font-weight: bold;
+    border-bottom: 3px solid #000;
+  }
+  
+  .bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .booking-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f2f2f2;
+    padding: 16px;
+    border-radius: 8px;
+  }
+  
+  .booking-info p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .booking-status {
+    font-weight: 500;
+    color: #444;
+  }
+  
+
 /* === KẾT THÚC CSS === */

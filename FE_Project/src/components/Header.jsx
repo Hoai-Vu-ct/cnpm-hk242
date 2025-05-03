@@ -10,7 +10,7 @@ function Header() {
         <nav className="nav-menu">
           {/* Dùng NavLink để có class 'active' tự động */}
           <NavLink to="/" end>Trang chủ</NavLink>
-          <NavLink to="/spaces">Không gian phòng học</NavLink> {/* Cập nhật path nếu cần */}
+          <NavLink to="/room">Không gian phòng học</NavLink> {/* Cập nhật path nếu cần */}
           <NavLink to="/checkin">Check in</NavLink>
           <NavLink to="/history">Lịch sử đặt phòng</NavLink> {/* Cập nhật path nếu cần */}
         </nav>

@@ -4,8 +4,10 @@ import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import CheckinPage from './pages/CheckinPage';
 import LoginPage from './pages/LoginPage';
+import RoomPage from './pages/RoomPage';
+import HistoryPage from './pages/HistoryPage';
 // Import các trang khác nếu có
-// import SpacesPage from './pages/SpacesPage';
+
 // import HistoryPage from './pages/HistoryPage';
 // import NotFoundPage from './pages/NotFoundPage';
 
@@ -18,18 +20,19 @@ function App() {
 
         {/* Các routes dùng Layout chung (có Header/Footer) */}
         <Route path="/" element={<Layout />}>
-          {/* Trang chủ sẽ được render khi path là "/" */}
-          <Route index element={<HomePage />} />
-          <Route path="checkin" element={<CheckinPage />} />
-          {/* Thêm các route khác dùng Layout ở đây */}
-          {/* Ví dụ:
-          <Route path="spaces" element={<SpacesPage />} />
-          <Route path="history" element={<HistoryPage />} />
-          */}
+        {/* Trang chủ sẽ được render khi path là "/" */}
+        <Route index element={<HomePage />} />
+        <Route path="checkin" element={<CheckinPage />} />
+        {/* Thêm các route khác dùng Layout ở đây */}
+        
+        <Route path="room" element={<RoomPage />} />
+        
+        <Route path="history" element={<HistoryPage />} />
+
         </Route>
 
         {/* Route bắt các đường dẫn không khớp (404 Not Found) */}
-        {/* <Route path="*" element={<NotFoundPage />} /> */}
+        {/* { <Route path="*" element={<NotFoundPage />} /> } */}
       </Routes>
     </Router>
   );
