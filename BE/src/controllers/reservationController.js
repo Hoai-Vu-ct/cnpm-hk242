@@ -1,3 +1,6 @@
+const { checkOut } = require('./checkinController');
+const { sendSystemNotification } = require('./notificationHelper');
+
 // Simulated in-memory reservations (DB here later)
 const reservations = [];
 
@@ -31,9 +34,19 @@ exports.createReservation = (req, res) => {
         startTime,
         endTime,
         status: 'reserved',
+        checkedIn: false,
+        checkedOut: false,
+        reminded: false
     };
 
     reservations.push(newReservation);
+
+    // Auto-send confirmation notification
+    sendSystemNotification(
+        studentId,
+        "Reservation Confirmed",
+        `Your reservation for Space ${spaceId} is confirmed from ${startTime} to ${endTime}.`
+    );
 
     res.json({ message: 'Reservation created', reservationId });
 };
