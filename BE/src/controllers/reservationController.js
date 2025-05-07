@@ -1,87 +1,112 @@
-const { checkOut } = require('./checkinController');
-const { sendSystemNotification } = require('./notificationHelper');
+const db = require('../utils/db');
+const { sendSystemNotification } = require('../helpers/notificationHelper');
 
-// Simulated in-memory reservations (DB here later)
-const reservations = [];
-
-exports.createReservation = (req, res) => {
+// Create reservation
+exports.createReservation = async (req, res) => {
     const { studentId, spaceId, startTime, endTime } = req.body;
 
     if (!studentId || !spaceId || !startTime || !endTime) {
         return res.status(400).json({ message: 'Missing reservation data' });
     }
 
-    // Validation: Prevent double booking (same space & overlapping time)
-    const overlapping = reservations.find(r =>
-        r.spaceId === spaceId &&
-        r.status === 'reserved' &&
-        (
-            (new Date(startTime) < new Date(r.endTime)) &&
-            (new Date(endTime) > new Date(r.startTime))
-        )
-    );
+    try {
+        // Prevent double booking (check overlap)
+        const [overlapping] = await db.query(
+            `SELECT * FROM Reservation 
+             WHERE spaceId = ? AND status = 'reserved' 
+             AND (startTime < ? AND endTime > ?)`,
+            [spaceId, endTime, startTime]
+        );
 
-    if (overlapping) {
-        return res.status(409).json({ message: 'This space is already booked at that time' });
+        if (overlapping.length > 0) {
+            return res.status(409).json({ message: 'This space is already booked at that time' });
+        }
+
+        // Insert reservation
+        const [result] = await db.query(
+            `INSERT INTO Reservation (userId, spaceId, startTime, endTime, status, reminded) 
+             VALUES (?, ?, ?, ?, 'reserved', FALSE)`,
+            [studentId, spaceId, startTime, endTime]
+        );
+
+        const reservationId = result.insertId;
+
+        // Auto-send confirmation notification
+        sendSystemNotification(
+            studentId,
+            "Reservation Confirmed",
+            `Your reservation for Space ${spaceId} is confirmed from ${startTime} to ${endTime}.`
+        );
+
+        res.json({ message: 'Reservation created', reservationId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    const reservationId = `resv_${Date.now()}`;
-
-    const newReservation = {
-        reservationId,
-        studentId,
-        spaceId,
-        startTime,
-        endTime,
-        status: 'reserved',
-        checkedIn: false,
-        checkedOut: false,
-        reminded: false
-    };
-
-    reservations.push(newReservation);
-
-    // Auto-send confirmation notification
-    sendSystemNotification(
-        studentId,
-        "Reservation Confirmed",
-        `Your reservation for Space ${spaceId} is confirmed from ${startTime} to ${endTime}.`
-    );
-
-    res.json({ message: 'Reservation created', reservationId });
 };
 
-exports.cancelReservation = (req, res) => {
+// Cancel reservation
+exports.cancelReservation = async (req, res) => {
     const { reservationId, studentId } = req.body;
 
     if (!reservationId || !studentId) {
         return res.status(400).json({ message: 'Missing reservationId or studentId' });
     }
 
-    const reservation = reservations.find(r => r.reservationId === reservationId && r.studentId === studentId);
+    try {
+        // Find reservation
+        const [rows] = await db.query(
+            `SELECT * FROM Reservation WHERE reservationId = ? AND userId = ?`,
+            [reservationId, studentId]
+        );
 
-    if (!reservation) {
-        return res.status(404).json({ message: 'Reservation not found' });
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Reservation not found' });
+        }
+
+        const reservation = rows[0];
+
+        if (reservation.status === 'cancelled') {
+            return res.status(400).json({ message: 'Reservation already cancelled' });
+        }
+
+        // Update status
+        await db.query(
+            `UPDATE Reservation SET status = 'cancelled' WHERE reservationId = ?`,
+            [reservationId]
+        );
+
+        res.json({ message: 'Reservation cancelled', reservationId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    if (reservation.status === 'cancelled') {
-        return res.status(400).json({ message: 'Reservation already cancelled' });
-    }
-
-    reservation.status = 'cancelled';
-
-    res.json({ message: 'Reservation cancelled', reservationId });
 };
 
-exports.getReservationsByStudent = (req, res) => {
+// Get reservations by student
+exports.getReservationsByStudent = async (req, res) => {
     const { studentId } = req.params;
 
-    const studentReservations = reservations.filter(r => r.studentId === studentId);
+    try {
+        const [rows] = await db.query(
+            `SELECT * FROM Reservation WHERE userId = ?`,
+            [studentId]
+        );
 
-    res.json(studentReservations);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };
 
-// Admin API: Get all reservations
-exports.getAllReservations = (req, res) => {
-    res.json(reservations);
+// Admin: Get all reservations
+exports.getAllReservations = async (req, res) => {
+    /*if (req.user?.type !== 'Admin') {
+        return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }*/
+
+    try {
+        const [rows] = await db.query(`SELECT * FROM Reservation`);
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 };

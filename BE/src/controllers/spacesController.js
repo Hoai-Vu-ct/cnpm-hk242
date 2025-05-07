@@ -1,59 +1,101 @@
-// Dummy in-memory data (for now)
-let spaces = [
-    { id: '1', name: 'Room A', location: 'Building 1', status: 'available' },
-    { id: '2', name: 'Room B', location: 'Building 2', status: 'occupied' },
-];
+const db = require('../utils/db');
 
-exports.getAllSpaces = (req, res) => {
-    res.json(spaces);
-};
-
-exports.getSpaceById = (req, res) => {
-    const space = spaces.find(s => s.id === req.params.id);
-    if (space) {
-        res.json(space);
-    } else {
-        res.status(404).json({ error: 'Space not found' });
+// 1. Get all spaces
+exports.getAllSpaces = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM StudySpace');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
 
-exports.getSpaceStatus = (req, res) => {
-    const space = spaces.find(s => s.id === req.params.id);
-    if (space) {
-        res.json({ id: space.id, status: space.status });
-    } else {
-        res.status(404).json({ error: 'Space not found' });
+// 2. Get space by ID
+exports.getSpaceById = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT * FROM StudySpace WHERE spaceId = ?', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ error: 'Space not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
 
-exports.createSpace = (req, res) => {
-    const newSpace = {
-        id: (spaces.length + 1).toString(),
-        name: req.body.name,
-        location: req.body.location,
-        status: 'available',
-    };
-    spaces.push(newSpace);
-    res.status(201).json(newSpace);
-};
-
-exports.updateSpace = (req, res) => {
-    const space = spaces.find(s => s.id === req.params.id);
-    if (space) {
-        space.name = req.body.name || space.name;
-        space.location = req.body.location || space.location;
-        res.json(space);
-    } else {
-        res.status(404).json({ error: 'Space not found' });
+// 3. Get space status only
+exports.getSpaceStatus = async (req, res) => {
+    try {
+        const [rows] = await db.query('SELECT spaceId, status FROM StudySpace WHERE spaceId = ?', [req.params.id]);
+        if (rows.length > 0) {
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ error: 'Space not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };
 
-exports.deleteSpace = (req, res) => {
-    const index = spaces.findIndex(s => s.id === req.params.id);
-    if (index !== -1) {
-        spaces.splice(index, 1);
-        res.json({ message: 'Space deleted' });
-    } else {
-        res.status(404).json({ error: 'Space not found' });
+// 4. Create new space
+exports.createSpace = async (req, res) => {
+    /*if (req.user?.type !== 'Admin') {
+        return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }*/
+
+    try {
+        const { location } = req.body;
+        const [result] = await db.query('INSERT INTO StudySpace (location) VALUES (?)', [location]);
+        const newSpaceId = result.insertId;
+
+        // Fetch the newly created space
+        const [rows] = await db.query('SELECT * FROM StudySpace WHERE spaceId = ?', [newSpaceId]);
+        res.status(201).json(rows[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// 5. Update space
+exports.updateSpace = async (req, res) => {
+    // Restrict to admin-only 
+    if (req.user?.type !== 'Admin') {
+        return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }
+
+    try {
+        const { location, status } = req.body;
+        const [result] = await db.query(
+            'UPDATE StudySpace SET location = COALESCE(?, location), status = COALESCE(?, status) WHERE spaceId = ?',
+            [location, status, req.params.id]
+        );
+
+        if (result.affectedRows > 0) {
+            const [rows] = await db.query('SELECT * FROM StudySpace WHERE spaceId = ?', [req.params.id]);
+            res.json(rows[0]);
+        } else {
+            res.status(404).json({ error: 'Space not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// 6. Delete space
+exports.deleteSpace = async (req, res) => {
+    /*if (req.user?.type !== 'Admin') {
+        return res.status(403).json({ error: 'Access denied. Admins only.' });
+    }*/
+   
+    try {
+        const [result] = await db.query('DELETE FROM StudySpace WHERE spaceId = ?', [req.params.id]);
+        if (result.affectedRows > 0) {
+            res.json({ message: 'Space deleted' });
+        } else {
+            res.status(404).json({ error: 'Space not found' });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 };

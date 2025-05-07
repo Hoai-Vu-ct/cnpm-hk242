@@ -1,87 +1,108 @@
-// Simulated in-memory storage (Database later)
-let checkedInReservations = {};
+const db = require('../utils/db');
+const { autoReleaseNoShows } = require('../helpers/autoReleaseHelper');
 
-exports.checkIn = (req, res) => {
+// Check-in API
+exports.checkIn = async (req, res) => {
     const { reservationId, studentId } = req.body;
 
     if (!reservationId || !studentId) {
         return res.status(400).json({ message: 'Missing reservationId or studentId' });
     }
 
-    // Simulate fetching reservation (replace with DB call later)
-    const now = new Date();
-    const reservationStart = new Date(now.getTime() - 10 * 60 * 1000); // 10 min ago
-    const reservationEnd = new Date(now.getTime() + 50 * 60 * 1000); // 50 min later
+    try {
+        // Fetch reservation from DB
+        const [rows] = await db.query(
+            `SELECT * FROM Reservation WHERE reservationId = ? AND userId = ?`,
+            [reservationId, studentId]
+        );
 
-    // Allow check-in only within reservation window (+10 min early buffer)
-    const earlyBuffer = 10 * 60 * 1000; // 10 minutes
-    if (now < new Date(reservationStart.getTime() - earlyBuffer)) {
-        return res.status(400).json({ message: 'Too early to check in' });
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Reservation not found' });
+        }
+
+        const reservation = rows[0];
+        const now = new Date();
+        const startTime = new Date(reservation.startTime);
+        const endTime = new Date(reservation.endTime);
+
+        // Allow check-in only within window (+10 min early buffer)
+        const earlyBuffer = 10 * 60 * 1000; // 10 minutes
+        if (now < new Date(startTime.getTime() - earlyBuffer)) {
+            return res.status(400).json({ message: 'Too early to check in' });
+        }
+
+        if (now > endTime) {
+            return res.status(400).json({ message: 'Reservation time has already ended' });
+        }
+
+        // Update reservation status to "checked_in"
+        await db.query(
+            `UPDATE Reservation SET status = 'checked_in' WHERE reservationId = ?`,
+            [reservationId]
+        );
+
+        // Mark study space as "Occupied"
+        await db.query(
+            `UPDATE StudySpace SET status = 'Occupied' WHERE spaceId = ?`,
+            [reservation.spaceId]
+        );
+
+        res.json({ message: 'Checked in successfully', reservationId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    if (now > reservationEnd) {
-        return res.status(400).json({ message: 'Reservation time has already ended' });
-    }
-
-    // Mark this reservation as checked in
-    checkedInReservations[reservationId] = {
-        studentId,
-        checkInTime: now,
-    };
-
-    res.json({ message: 'Checked in successfully', reservationId });
 };
 
-exports.checkOut = (req, res) => {
+// Check-out API
+exports.checkOut = async (req, res) => {
     const { reservationId } = req.body;
 
     if (!reservationId) {
         return res.status(400).json({ message: 'Missing reservationId' });
     }
 
-    // Check if already checked in
-    if (!checkedInReservations[reservationId]) {
-        return res.status(400).json({ message: 'Reservation is not currently checked in' });
+    try {
+        // Check reservation status
+        const [rows] = await db.query(
+            `SELECT * FROM Reservation WHERE reservationId = ?`,
+            [reservationId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Reservation not found' });
+        }
+
+        const reservation = rows[0];
+
+        if (reservation.status !== 'checked_in') {
+            return res.status(400).json({ message: 'Reservation is not currently checked in' });
+        }
+
+        // Mark as checked out (update status back to "completed")
+        await db.query(
+            `UPDATE Reservation SET status = 'completed' WHERE reservationId = ?`,
+            [reservationId]
+        );
+
+        // Free up the study space (set back to Available)
+        await db.query(
+            `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
+            [reservation.spaceId]
+        );
+
+        res.json({ message: 'Checked out successfully', reservationId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    // Remove check-in record (simulate check-out)
-    delete checkedInReservations[reservationId];
-
-    res.json({ message: 'Checked out successfully', reservationId });
 };
 
-exports.autoReleaseNoShows = (req, res) => {
-    // Simulated list of reservations (remove this and add DB later)
-    const reservations = [
-        {
-            reservationId: 'resv123',
-            studentId: 'stu456',
-            startTime: new Date(new Date().getTime() - 30 * 60 * 1000), // started 30 mins ago
-            checkedIn: false,
-        },
-        {
-            reservationId: 'resv789',
-            studentId: 'stu999',
-            startTime: new Date(new Date().getTime() - 5 * 60 * 1000), // started 5 mins ago
-            checkedIn: false,
-        },
-    ];
-
-    // Release those not checked in within 15 mins
-    const releaseThreshold = 15 * 60 * 1000; // 15 minutes
-    const now = new Date();
-
-    const released = [];
-
-    reservations.forEach((resv) => {
-        const timeSinceStart = now - resv.startTime;
-        const alreadyCheckedIn = checkedInReservations[resv.reservationId];
-
-        if (timeSinceStart > releaseThreshold && !alreadyCheckedIn) {
-            // Auto-release logic (in real app: update DB to cancel reservation)
-            released.push(resv.reservationId);
-        }
-    });
-
-    res.json({ message: 'Auto-release complete', released });
+// Auto-release no-shows (no one shows up after 15 minutes)
+exports.autoReleaseNoShows = async (req, res) => {
+    try {
+        const released = await autoReleaseNoShows();
+        res.json({ message: 'Auto-release complete', released });
+    } catch (err) {
+        console.error('Error during auto-release:', err);
+        res.status(500).json({ message: 'Error during auto-release' });
+    }
 };

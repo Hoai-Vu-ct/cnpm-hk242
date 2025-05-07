@@ -1,5 +1,4 @@
-// In-memory fake notification store
-const notifications = [];
+const db = require('../utils/db');
 
 exports.listNotifications = (req, res) => {
     const { userId } = req.params;
@@ -8,8 +7,14 @@ exports.listNotifications = (req, res) => {
         return res.status(400).json({ message: 'Missing userId' });
     }
 
-    const userNotifications = notifications.filter(n => n.userId === userId);
-    res.json(userNotifications);
+    const query = 'SELECT * FROM Notification WHERE userId = ? ORDER BY timestamp DESC';
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Database error' });
+        }
+        res.json(results);
+    });
 };
 
 exports.sendNotification = (req, res) => {
@@ -19,20 +24,15 @@ exports.sendNotification = (req, res) => {
         return res.status(400).json({ message: 'Missing data' });
     }
 
-    const notificationId = `notif_${Date.now()}`;
+    const query = 'INSERT INTO Notification (userId, title, message) VALUES (?, ?, ?)';
+    db.query(query, [userId, title, message], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Database error' });
+        }
 
-    const newNotification = {
-        notificationId,
-        userId,
-        title,
-        message,
-        status: 'unread',
-        timestamp: new Date().toISOString(),
-    };
-
-    notifications.push(newNotification);
-
-    res.json({ message: 'Notification sent', notificationId });
+        res.json({ message: 'Notification sent', notificationId: result.insertId });
+    });
 };
 
 exports.markAsRead = (req, res) => {
@@ -42,13 +42,17 @@ exports.markAsRead = (req, res) => {
         return res.status(400).json({ message: 'Missing data' });
     }
 
-    const notification = notifications.find(n => n.notificationId === notificationId && n.userId === userId);
+    const query = 'UPDATE Notification SET status = "read" WHERE notificationId = ? AND user_id = ?';
+    db.query(query, [notificationId, userId], (err, result) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({ message: 'Database error' });
+        }
 
-    if (!notification) {
-        return res.status(404).json({ message: 'Notification not found' });
-    }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Notification not found' });
+        }
 
-    notification.status = 'read';
-
-    res.json({ message: 'Notification marked as read' });
+        res.json({ message: 'Notification marked as read' });
+    });
 };

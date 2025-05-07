@@ -6,6 +6,6 @@ npm init -y
 npm install express cors dotenv
 npm install nodemon --save-dev
 npm install node-cron
-npm install mongoose
+npm install mysql2
 
 
