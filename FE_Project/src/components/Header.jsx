@@ -79,7 +79,7 @@ function Header() {
               )}
             </>
           ) : (
-            <Link to="/login" className="user-icon">👤 Đăng nhập</Link>
+            <Link to="/login" className="user-icon">👤</Link>
           )}
         </div>
       </div>
