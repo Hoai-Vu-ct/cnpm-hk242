@@ -15,6 +15,7 @@ VALUES
 ('Building B - Room 202', 'Available', "10:00:00", "14:00:00");
 
 
+
 -- Reservation
 INSERT INTO Reservation (userId, spaceId, startTime, endTime, status)
 VALUES 

@@ -6,6 +6,7 @@ npm init -y
 npm install express cors dotenv
 npm install nodemon --save-dev
 npm install node-cron
-npm install mysql2
+npm install mysql2 express-session
+npm install bcrypt nodemailer
 
 

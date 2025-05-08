@@ -10,7 +10,8 @@ CREATE TABLE User (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    type ENUM('Student', 'Admin', 'ITStaff') NOT NULL
+    CCCD VARCHAR(20) NOT NULL,
+    type ENUM('Student', 'Admin', 'ITStaff') NOT NULL DEFAULT 'Student'
 );
 
 CREATE TABLE StudySpace (
@@ -60,10 +61,3 @@ CREATE TABLE Notification (
     FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE
 );
 
-ALTER TABLE studyspace
-ADD COLUMN startTime DATETIME NULL,
-ADD COLUMN endTime DATETIME NULL;
-
-ALTER TABLE reservation
-ADD COLUMN checkedInTime DATETIME NULL,
-ADD COLUMN checkedOutTime DATETIME NULL;

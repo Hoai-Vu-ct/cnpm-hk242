@@ -3,8 +3,8 @@ const db = require('../utils/db');
 const { sendSystemNotification } = require('../helpers/notificationHelper');
 
 function startReminderJob() {
-    // Run every minute
-    cron.schedule('* * * * *', () => {
+    // Run every 5 minute
+    cron.schedule('*/5 * * * *', () => {
         console.log("[Reminder Job] Running check for upcoming reservations...");
 
         const now = new Date();

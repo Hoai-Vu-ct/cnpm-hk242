@@ -1,5 +1,40 @@
 const db = require('../utils/db');
 
+// Turn ON devices
+async function turnOnDevices(spaceId) {
+    const [equipments] = await db.query('SELECT * FROM Equipment WHERE spaceId = ?', [spaceId]);
+    const [sensors] = await db.query('SELECT * FROM Sensor WHERE spaceId = ?', [spaceId]);
+
+    for (const eq of equipments) {
+        await db.query('UPDATE Equipment SET status = "ON" WHERE equipmentId = ?', [eq.equipmentId]);
+    }
+
+    for (const sensor of sensors) {
+        await db.query('UPDATE Sensor SET status = "ON" WHERE sensorId = ?', [sensor.sensorId]);
+    }
+
+    console.log(`[IoT] Turned ON all devices in Space ${spaceId}`);
+}
+
+// Turn OFF devices
+async function turnOffDevices(spaceId) {
+    const [equipments] = await db.query('SELECT * FROM Equipment WHERE spaceId = ?', [spaceId]);
+    const [sensors] = await db.query('SELECT * FROM Sensor WHERE spaceId = ?', [spaceId]);
+
+    for (const eq of equipments) {
+        await db.query('UPDATE Equipment SET status = "OFF" WHERE equipmentId = ?', [eq.equipmentId]);
+    }
+
+    for (const sensor of sensors) {
+        await db.query('UPDATE Sensor SET status = "OFF" WHERE sensorId = ?', [sensor.sensorId]);
+    }
+
+    console.log(`[IoT] Turned OFF all devices in Space ${spaceId}`);
+}
+
+exports.turnOnDevices = turnOnDevices;
+exports.turnOffDevices = turnOffDevices;
+
 // Helper to update status for both Equipment and Sensors
 function updateDeviceStatus(spaceId, newStatus, res, action) {
     // Update Equipment first
@@ -35,7 +70,7 @@ function updateDeviceStatus(spaceId, newStatus, res, action) {
 }
 
 // Turn ON all devices and sensors in a space
-exports.turnOnDevices = (req, res) => {
+exports.turnOn = async (req, res) => {
     const { spaceId } = req.body;
 
     if (!spaceId) {
@@ -46,7 +81,7 @@ exports.turnOnDevices = (req, res) => {
 };
 
 // Turn OFF all devices and sensors in a space
-exports.turnOffDevices = (req, res) => {
+exports.turnOff = async (req, res) => {
     const { spaceId } = req.body;
 
     if (!spaceId) {

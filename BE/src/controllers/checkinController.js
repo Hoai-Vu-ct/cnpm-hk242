@@ -4,17 +4,17 @@ const { turnOffDevices, turnOnDevices } = require('./iotController');
 
 // Check-in API
 exports.checkIn = async (req, res) => {
-    const { reservationId, studentId } = req.body;
+    const { reservationId, userId } = req.body;
 
-    if (!reservationId || !studentId) {
-        return res.status(400).json({ message: 'Missing reservationId or studentId' });
+    if (!reservationId || !userId) {
+        return res.status(400).json({ message: 'Missing reservationId or userId' });
     }
 
     try {
         // Fetch reservation from DB
         const [rows] = await db.query(
             `SELECT * FROM Reservation WHERE reservationId = ? AND userId = ?`,
-            [reservationId, studentId]
+            [reservationId, userId]
         );
 
         if (rows.length === 0) {
@@ -26,6 +26,11 @@ exports.checkIn = async (req, res) => {
         const startTime = new Date(reservation.startTime);
         const endTime = new Date(reservation.endTime);
 
+        // Only allow check-in when status is "Reserved"
+        if (reservation.status !== 'Reserved') {
+            return res.status(400).json({ message: 'You can not check-in anymore' });
+        }
+
         // Allow check-in only within window (+10 min early buffer)
         const earlyBuffer = 10 * 60 * 1000; // 10 minutes
         if (now < new Date(startTime.getTime() - earlyBuffer)) {
@@ -36,10 +41,16 @@ exports.checkIn = async (req, res) => {
             return res.status(400).json({ message: 'Reservation time has already ended' });
         }
 
-        // Update reservation status to "checked_in"
+        // Update reservation status to "checkedIn"
         await db.query(
-            `UPDATE Reservation SET status = 'checked_in' WHERE reservationId = ?`,
+            `UPDATE Reservation SET status = 'CheckedIn' WHERE reservationId = ?`,
             [reservationId]
+        );
+
+        // Update reservation with check-in time
+        await db.query(
+            `UPDATE Reservation SET checkedInTime = ? WHERE reservationId = ?`,
+            [now, reservationId]
         );
 
         // Mark study space as "Occupied"
@@ -49,7 +60,7 @@ exports.checkIn = async (req, res) => {
         );
 
         // Turn on devices in the room after checking-in
-        turnOffDevices(reservation.spaceId);
+        turnOnDevices(reservation.spaceId);
 
         res.json({ message: 'Checked in successfully', reservationId });
     } catch (err) {
@@ -77,16 +88,24 @@ exports.checkOut = async (req, res) => {
         }
 
         const reservation = rows[0];
+        const now = new Date();
 
-        if (reservation.status !== 'checked_in') {
+        if (reservation.status !== 'CheckedIn') {
             return res.status(400).json({ message: 'Reservation is not currently checked in' });
         }
 
         // Mark as checked out (update status back to "completed")
         await db.query(
-            `UPDATE Reservation SET status = 'completed' WHERE reservationId = ?`,
+            `UPDATE Reservation SET status = 'Completed' WHERE reservationId = ?`,
             [reservationId]
         );
+
+        // Update reservation with check-out time
+        await db.query(
+            `UPDATE Reservation SET checkedOutTime = ? WHERE reservationId = ?`,
+            [now, reservationId]
+        );
+
 
         // Free up the study space (set back to Available)
         await db.query(
