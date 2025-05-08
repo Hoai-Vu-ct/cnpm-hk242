@@ -11,8 +11,8 @@ router.get('/checkin/qr', checkinController.checkInQR);
 // Check-out
 router.post('/checkout', checkinController.checkOut);
 
-// Check-out
-router.get('/checkout/qr', checkinController.checkOut);
+// Check-out QR
+router.get('/checkout/qr', checkinController.checkOutQR);
 
 // Auto-release reservations not checked in
 router.post('/auto-release', checkinController.autoReleaseNoShows);

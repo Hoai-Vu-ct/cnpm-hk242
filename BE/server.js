@@ -21,6 +21,7 @@ app.use(session({
 // Automatic cron jobs
 const { startReminderJob } = require('./src/jobs/reminderJob.js');
 const { autoReleaseRooms } = require('./src/jobs/autoreleaseJob.js');
+const { autoEndJob } = require('./src/jobs/autoEndJob.js')
 
 // Routes
 const authRoutes = require('./src/routes/AuthRouter.js')
@@ -43,4 +44,5 @@ app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
     startReminderJob();     // Function that automatically send a notification 30 minutes before reservation starts
     autoReleaseRooms();     // Function that automatically releases reserved room that are empty for 10 minutes
+    autoEndJob();           // Functio nthat automatically ends reservations that are past ending time (in case students forgot)
 });

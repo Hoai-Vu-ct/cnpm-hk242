@@ -109,7 +109,7 @@ function HomePage() {
     setIsBooking(true);
     setBookingMessage('');
 
-    const studentId = "1"; // Cần thay bằng logic lấy studentId thực tế
+    const userId = "1"; // Cần thay bằng logic lấy studentId thực tế
 
     const chosenSlotDetails = spacesData.find(s => s.spaceId === parseInt(selectedSpaceId));
 
@@ -123,7 +123,7 @@ function HomePage() {
     const endTimeString = `${todayLocalString} ${chosenSlotDetails.endTime}`;
 
     const reservationData = {
-      userId: parseInt(studentId),
+      userId: parseInt(userId),
       spaceId: parseInt(selectedSpaceId), // spaceId của khung giờ cụ thể
       startTime: startTimeString, 
       endTime: endTimeString,
