@@ -68,6 +68,71 @@ exports.checkIn = async (req, res) => {
     }
 };
 
+// Check-out API
+exports.checkOut = async (req, res) => {
+    const { reservationId } = req.body;
+
+    if (!reservationId) {
+        return res.status(400).json({ message: 'Missing reservationId' });
+    }
+
+    try {
+        // Check reservation status
+        const [rows] = await db.query(
+            `SELECT * FROM Reservation WHERE reservationId = ?`,
+            [reservationId]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ message: 'Reservation not found' });
+        }
+
+        const reservation = rows[0];
+        const now = new Date();
+
+        if (reservation.status !== 'CheckedIn') {
+            return res.status(400).json({ message: 'Reservation is not currently checked in' });
+        }
+
+        // Mark as checked out (update status back to "completed")
+        await db.query(
+            `UPDATE Reservation SET status = 'Completed' WHERE reservationId = ?`,
+            [reservationId]
+        );
+
+        // Update reservation with check-out time
+        await db.query(
+            `UPDATE Reservation SET checkedOutTime = ? WHERE reservationId = ?`,
+            [now, reservationId]
+        );
+
+
+        // Free up the study space (set back to Available)
+        await db.query(
+            `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
+            [reservation.spaceId]
+        );
+
+        // Turn off devices after checking-out
+        turnOffDevices(reservation.spaceId);
+
+        res.json({ message: 'Checked out successfully', reservationId });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// Auto-release no-shows (no one shows up after 15 minutes)
+exports.autoReleaseNoShows = async (req, res) => {
+    try {
+        const released = await autoReleaseNoShows();
+        res.json({ message: 'Auto-release complete', released });
+    } catch (err) {
+        console.error('Error during auto-release:', err);
+        res.status(500).json({ message: 'Error during auto-release' });
+    }
+};
+
 // Check-in using QR
 exports.checkInQR = async (req, res) => {
     const { reservationId, userId } = req.query;
@@ -134,9 +199,9 @@ exports.checkInQR = async (req, res) => {
     }
 };
 
-// Check-out API
+// Check-out using QR
 exports.checkOut = async (req, res) => {
-    const { reservationId } = req.body;
+    const { reservationId } = req.query;
 
     if (!reservationId) {
         return res.status(400).json({ message: 'Missing reservationId' });
@@ -185,16 +250,5 @@ exports.checkOut = async (req, res) => {
         res.json({ message: 'Checked out successfully', reservationId });
     } catch (err) {
         res.status(500).json({ error: err.message });
-    }
-};
-
-// Auto-release no-shows (no one shows up after 15 minutes)
-exports.autoReleaseNoShows = async (req, res) => {
-    try {
-        const released = await autoReleaseNoShows();
-        res.json({ message: 'Auto-release complete', released });
-    } catch (err) {
-        console.error('Error during auto-release:', err);
-        res.status(500).json({ message: 'Error during auto-release' });
     }
 };
