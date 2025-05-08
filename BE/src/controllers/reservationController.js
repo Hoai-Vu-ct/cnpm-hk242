@@ -31,6 +31,12 @@ exports.createReservation = async (req, res) => {
 
         const reservationId = result.insertId;
 
+        // Mark study space as "Reserved"
+        await db.query(
+            `UPDATE StudySpace SET status = 'Reserved' WHERE spaceId = ?`,
+            [reservation.spaceId]
+        );
+
         // Auto-send confirmation notification
         sendSystemNotification(
             studentId,
@@ -73,6 +79,12 @@ exports.cancelReservation = async (req, res) => {
         await db.query(
             `UPDATE Reservation SET status = 'cancelled' WHERE reservationId = ?`,
             [reservationId]
+        );
+
+        // Mark study space as "Available"
+        await db.query(
+            `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
+            [reservation.spaceId]
         );
 
         res.json({ message: 'Reservation cancelled', reservationId });

@@ -1,3 +1,4 @@
+const { turnOffDevices } = require('../controllers/iotController');
 const db = require('../utils/db');
 
 async function autoReleaseNoShows() {
@@ -19,6 +20,9 @@ async function autoReleaseNoShows() {
 
         // Mark study space as available
         await db.query(`UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`, [resv.spaceId]);
+        
+        // Turn off devices
+        turnOffDevices(resv.spaceId);
 
         releasedIds.push(resv.reservationId);
     }

@@ -1,5 +1,6 @@
 const db = require('../utils/db');
 const { autoReleaseNoShows } = require('../helpers/autoReleaseHelper');
+const { turnOffDevices, turnOnDevices } = require('./iotController');
 
 // Check-in API
 exports.checkIn = async (req, res) => {
@@ -47,6 +48,9 @@ exports.checkIn = async (req, res) => {
             [reservation.spaceId]
         );
 
+        // Turn on devices in the room after checking-in
+        turnOffDevices(reservation.spaceId);
+
         res.json({ message: 'Checked in successfully', reservationId });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -89,6 +93,9 @@ exports.checkOut = async (req, res) => {
             `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
             [reservation.spaceId]
         );
+
+        // Turn off devices after checking-out
+        turnOffDevices(reservation.spaceId);
 
         res.json({ message: 'Checked out successfully', reservationId });
     } catch (err) {
