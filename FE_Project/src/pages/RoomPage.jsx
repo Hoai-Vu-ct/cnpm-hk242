@@ -1,23 +1,64 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 
-// URL ngrok của bạn, đảm bảo nó đang chạy và trỏ đúng đến backend
-const NGROK_BASE_URL = 'https://live-newt-neatly.ngrok-free.app'; // Hoặc lấy từ một file config chung
+const NGROK_BASE_URL = 'http://localhost:5000';
+const HARDCODED_STUDENT_ID = 1; // Fix tạm studentId là 1
 
 const RoomPage = () => {
-  const location = useLocation();
+  const location = useLocation(); // Vẫn giữ để có thể lấy passedRoomName nếu cần
   const navigate = useNavigate();
 
-  // Lấy thông tin từ state được truyền qua navigate
-  const { reservationDetails, roomName: passedRoomName } = location.state || {};
+  // Lấy passedRoomName từ state nếu có, dùng làm fallback hoặc ưu tiên hiển thị tên
+  const { roomName: passedRoomName } = location.state || {};
 
+  const [currentReservation, setCurrentReservation] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+  
   const [remainingTime, setRemainingTime] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutMessage, setCheckoutMessage] = useState('');
 
-  // Sử dụng useMemo để chỉ tính toán lại khi reservationDetails thay đổi
-  const roomDisplayName = useMemo(() => passedRoomName || reservationDetails?.space?.location || "Không rõ phòng", [passedRoomName, reservationDetails]);
-  const studentName = useMemo(() => reservationDetails?.user?.name || "Người dùng", [reservationDetails]); // Giả sử có thông tin user trong reservationDetails
+  useEffect(() => {
+    const studentId = HARDCODED_STUDENT_ID; // Sử dụng studentId đã fix cứng
+
+    const fetchCheckedInReservation = async () => {
+      setIsLoading(true);
+      setFetchError(null);
+      setCurrentReservation(null); 
+      try {
+        const response = await fetch(`${NGROK_BASE_URL}/api/reservations/student/${studentId}`);
+        if (!response.ok) {
+          const errorData = await response.text();
+          throw new Error(`Lỗi ${response.status} khi tải danh sách đặt phòng: ${errorData}`);
+        }
+        const reservationsArray = await response.json();
+        
+        // Tìm đặt phòng đầu tiên có trạng thái là 'checkedin'
+        const checkedInReservation = reservationsArray.find(
+          (res) => res.status && res.status.toLowerCase() === 'checkedin'
+        );
+
+        if (checkedInReservation) {
+          setCurrentReservation(checkedInReservation);
+        } else {
+          setFetchError(`Không tìm thấy phòng nào đang "checkedin" cho sinh viên ID ${studentId}.`);
+        }
+      } catch (error) {
+        console.error("Lỗi khi fetch đặt phòng đang checked-in:", error);
+        setFetchError(error.message || "Có lỗi xảy ra khi tải thông tin phòng.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCheckedInReservation();
+
+  }, []); // Chạy một lần khi component mount
+
+  // Sử dụng useMemo để chỉ tính toán lại khi currentReservation hoặc passedRoomName thay đổi
+  const roomDisplayName = useMemo(() => passedRoomName || currentReservation?.space?.location || "Không rõ phòng", [passedRoomName, currentReservation]);
+  const studentName = useMemo(() => currentReservation?.user?.name || `Sinh viên ID ${HARDCODED_STUDENT_ID}`, [currentReservation]);
 
   const formatTime = (dateString) => {
     if (!dateString) return "N/A";
@@ -25,28 +66,28 @@ const RoomPage = () => {
       const date = new Date(dateString);
       return date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
     } catch (e) {
-      return "N/A";
+      console.error("Lỗi định dạng thời gian:", e, "Input:", dateString);
+      return "Lỗi giờ";
     }
   };
 
-  const startTime = useMemo(() => formatTime(reservationDetails?.startTime), [reservationDetails]);
-  const endTime = useMemo(() => formatTime(reservationDetails?.endTime), [reservationDetails]);
+  const startTime = useMemo(() => formatTime(currentReservation?.startTime), [currentReservation]);
+  const endTime = useMemo(() => formatTime(currentReservation?.endTime), [currentReservation]);
 
   useEffect(() => {
-    if (!reservationDetails || !reservationDetails.endTime) {
+    if (!currentReservation || !currentReservation.endTime) {
       setRemainingTime("Không xác định");
       return;
     }
 
     const calculateRemainingTime = () => {
       const now = new Date();
-      const end = new Date(reservationDetails.endTime);
+      const end = new Date(currentReservation.endTime);
       const diffMs = end - now;
 
       if (diffMs <= 0) {
         setRemainingTime("Đã hết giờ");
-        // Có thể tự động checkout ở đây nếu muốn
-        return 0; // Trả về 0 để dừng interval
+        return 0; 
       }
 
       const hours = Math.floor(diffMs / (1000 * 60 * 60));
@@ -55,7 +96,7 @@ const RoomPage = () => {
       
       let timeString = "";
       if (hours > 0) timeString += `${hours} giờ `;
-      if (minutes > 0 || hours > 0) timeString += `${minutes} phút `; // Hiển thị phút nếu có giờ hoặc phút > 0
+      if (minutes > 0 || hours > 0) timeString += `${minutes} phút `;
       timeString += `${seconds} giây`;
       
       setRemainingTime(timeString.trim());
@@ -63,7 +104,7 @@ const RoomPage = () => {
     };
 
     const initialDiff = calculateRemainingTime();
-    if (initialDiff <= 0) return; // Không đặt interval nếu đã hết giờ
+    if (initialDiff <= 0) return; 
 
     const timerId = setInterval(() => {
       if (calculateRemainingTime() <= 0) {
@@ -72,10 +113,10 @@ const RoomPage = () => {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [reservationDetails]);
+  }, [currentReservation]);
 
   const handleCheckout = async () => {
-    if (!reservationDetails || !reservationDetails.reservationId) {
+    if (!currentReservation || !currentReservation.reservationId) {
       setCheckoutMessage("Lỗi: Không tìm thấy thông tin đặt phòng để trả phòng.");
       return;
     }
@@ -89,7 +130,7 @@ const RoomPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ reservationId: reservationDetails.reservationId }),
+        body: JSON.stringify({ reservationId: currentReservation.reservationId }),
       });
 
       const result = await response.json();
@@ -97,7 +138,7 @@ const RoomPage = () => {
       if (response.ok) {
         setCheckoutMessage("Trả phòng thành công! Đang chuyển hướng...");
         setTimeout(() => {
-          navigate('/history'); // Hoặc trang chủ
+          navigate('/history'); 
         }, 2000);
       } else {
         setCheckoutMessage(`Lỗi trả phòng: ${result.message || response.statusText}`);
@@ -110,21 +151,31 @@ const RoomPage = () => {
     }
   };
 
-  // Nếu không có thông tin đặt phòng (ví dụ: truy cập trực tiếp URL)
-  if (!reservationDetails) {
+  if (isLoading) {
     return (
       <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
-        <h2>Không có thông tin phòng</h2>
-        <p>Vui lòng check-in một phòng để xem thông tin chi tiết.</p>
-        <Link to="/">Quay lại trang chủ</Link>
+        <h2>Đang tải thông tin phòng cho sinh viên ID {HARDCODED_STUDENT_ID}...</h2>
       </div>
     );
   }
 
+  if (fetchError || !currentReservation) {
+    return (
+      <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
+        <h2>{fetchError ? "Lỗi tải thông tin phòng" : "Không tìm thấy phòng"}</h2>
+        <p>{fetchError || `Không có phòng nào đang "checkedin" cho sinh viên ID ${HARDCODED_STUDENT_ID}.`}</p>
+        <Link to="/">Quay lại trang chủ</Link><br/>
+        <Link to="/checkin">Thử check-in một phòng</Link>
+      </div>
+    );
+  }
+
+  // Phần JSX hiển thị thông tin phòng giữ nguyên như trước,
+  // chỉ cần đảm bảo nó sử dụng currentReservation, roomDisplayName, studentName, startTime, endTime
   return (
     <div className="main-content">
       <div className="breadcrumb">
-        <Link to="/">Trang chủ</Link> → <span>Không gian phòng học</span>
+        <Link to="/">Trang chủ</Link> → <span>Thông tin phòng đang sử dụng</span>
       </div>
 
       <h2 className="page-title">
@@ -133,9 +184,9 @@ const RoomPage = () => {
 
       <div className="roompage-content">
         <div className="room-images">
-          {/* Các ảnh này có thể được lấy động nếu có URL trong reservationDetails.space */}
-          <div className="main-image">{/* <img src={reservationDetails?.space?.mainImageUrl} alt="Main room view"/> */}</div>
-          <div className="small-image">{/* <img src={reservationDetails?.space?.thumb1Url} alt="Room thumbnail 1"/> */}</div>
+          {/* Các ảnh này có thể được lấy động nếu có URL trong currentReservation.space */}
+          <div className="main-image">{/* <img src={currentReservation?.space?.mainImageUrl} alt="Main room view"/> */}</div>
+          <div className="small-image">{/* <img src={currentReservation?.space?.thumb1Url} alt="Room thumbnail 1"/> */}</div>
           <div className="small-image more-photos">
             <strong>+2</strong>
             <span>More Photos</span>
@@ -151,7 +202,7 @@ const RoomPage = () => {
           <button 
             className="booking-btn" 
             onClick={handleCheckout}
-            disabled={isCheckingOut || remainingTime === "Đã hết giờ"}
+            disabled={isCheckingOut || remainingTime === "Đã hết giờ" || !currentReservation}
           >
             {isCheckingOut ? "Đang xử lý..." : "Trả phòng"}
           </button>
