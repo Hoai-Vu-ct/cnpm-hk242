@@ -25,13 +25,7 @@ function autoEndJob() {
                     [resv.reservationId]
                 );
 
-                // Free up the study space
-                await db.query(
-                    `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
-                    [resv.spaceId]
-                );
-
-                // 4. Turn off devices in that space
+                // Turn off devices in that space
                 await turnOffDevicesForSpace(resv.spaceId);
             }
 

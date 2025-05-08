@@ -17,9 +17,6 @@ async function autoReleaseNoShows() {
     for (let resv of rows) {
         // Cancel reservation
         await db.query(`UPDATE Reservation SET status = 'AutoReleased' WHERE reservationId = ?`, [resv.reservationId]);
-
-        // Mark study space as available
-        await db.query(`UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`, [resv.spaceId]);
         
         // Turn off devices
         turnOffDevices(resv.spaceId);

@@ -8,9 +8,6 @@ router.get('/', spacesController.getAllSpaces);
 // GET /api/spaces/:id
 router.get('/:spaceId', spacesController.getSpaceById);
 
-// GET /api/spaces/:id/status
-router.get('/:id/status', spacesController.getSpaceStatus);
-
 // POST /api/spaces  (Admin only)
 router.post('/', spacesController.createSpace);
 

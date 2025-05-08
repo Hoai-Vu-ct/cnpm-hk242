@@ -1,6 +1,6 @@
 const db = require('../utils/db');
 
-// 1. Get all spaces
+// Get all spaces
 exports.getAllSpaces = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM StudySpace');
@@ -10,7 +10,7 @@ exports.getAllSpaces = async (req, res) => {
     }
 };
 
-// 2. Get space by ID
+// Get space by ID
 exports.getSpaceById = async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM StudySpace WHERE spaceId = ?', [req.params.spaceId]);
@@ -24,21 +24,8 @@ exports.getSpaceById = async (req, res) => {
     }
 };
 
-// 3. Get space status only
-exports.getSpaceStatus = async (req, res) => {
-    try {
-        const [rows] = await db.query('SELECT spaceId, status FROM StudySpace WHERE spaceId = ?', [req.params.spaceId]);
-        if (rows.length > 0) {
-            res.json(rows[0]);
-        } else {
-            res.status(404).json({ error: 'Space not found' });
-        }
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
 
-// 4. Create new space
+// Create new space
 exports.createSpace = async (req, res) => {
     /*if (req.user?.type !== 'Admin') {
         return res.status(403).json({ error: 'Access denied. Admins only.' });
@@ -66,7 +53,7 @@ exports.createSpace = async (req, res) => {
     }
 };
 
-// 5. Update space
+// Update space
 exports.updateSpace = async (req, res) => {
     // // Restrict to admin-only 
     // if (req.user?.type !== 'Admin') {
@@ -74,13 +61,12 @@ exports.updateSpace = async (req, res) => {
     // }
 
     try {
-        const { location, status, startTime, endTime } = req.body;
+        const { location, startTime, endTime } = req.body;
 
         const [result] = await db.query(
             `UPDATE StudySpace 
              SET 
                 location = COALESCE(?, location),
-                status = COALESCE(?, status),
                 startTime = COALESCE(?, startTime),
                 endTime = COALESCE(?, endTime)
              WHERE spaceId = ?`,
