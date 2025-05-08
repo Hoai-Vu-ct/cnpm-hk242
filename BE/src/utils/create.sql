@@ -11,7 +11,6 @@ CREATE TABLE User (
     username VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
-    CCCD VARCHAR(20) NOT NULL,
     type ENUM('Student', 'Admin', 'ITStaff') NOT NULL DEFAULT 'Student'
 );
 
@@ -72,3 +71,6 @@ ADD COLUMN endTime TIME NOT NULL;
 ALTER TABLE reservation
 ADD COLUMN checkedInTime DATETIME NULL,
 ADD COLUMN checkOutTime DATETIME NULL;
+
+ALTER TABLE studyspace
+DROP COLUMN status;

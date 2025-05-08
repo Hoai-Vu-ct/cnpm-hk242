@@ -53,11 +53,7 @@ exports.checkIn = async (req, res) => {
             [now, reservationId]
         );
 
-        // Mark study space as "Occupied"
-        await db.query(
-            `UPDATE StudySpace SET status = 'Occupied' WHERE spaceId = ?`,
-            [reservation.spaceId]
-        );
+
 
         // Turn on devices in the room after checking-in
         turnOnDevices(reservation.spaceId);
@@ -107,11 +103,7 @@ exports.checkOut = async (req, res) => {
         );
 
 
-        // Free up the study space (set back to Available)
-        await db.query(
-            `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
-            [reservation.spaceId]
-        );
+
 
         // Turn off devices after checking-out
         turnOffDevices(reservation.spaceId);
@@ -184,11 +176,7 @@ exports.checkInQR = async (req, res) => {
             [now, reservationId]
         );
 
-        // Mark study space as "Occupied"
-        await db.query(
-            `UPDATE StudySpace SET status = 'Occupied' WHERE spaceId = ?`,
-            [reservation.spaceId]
-        );
+    
 
         // Turn on devices in the room after checking-in
         turnOnDevices(reservation.spaceId);
@@ -238,12 +226,7 @@ exports.checkOutQR = async (req, res) => {
         );
 
 
-        // Free up the study space (set back to Available)
-        await db.query(
-            `UPDATE StudySpace SET status = 'Available' WHERE spaceId = ?`,
-            [reservation.spaceId]
-        );
-
+    
         // Turn off devices after checking-out
         turnOffDevices(reservation.spaceId);
 
