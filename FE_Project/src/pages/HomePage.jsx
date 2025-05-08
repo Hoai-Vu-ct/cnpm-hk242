@@ -123,7 +123,7 @@ function HomePage() {
     const endTimeString = `${todayLocalString} ${chosenSlotDetails.endTime}`;
 
     const reservationData = {
-      studentId: parseInt(studentId),
+      userId: parseInt(studentId),
       spaceId: parseInt(selectedSpaceId), // spaceId của khung giờ cụ thể
       startTime: startTimeString, 
       endTime: endTimeString,
