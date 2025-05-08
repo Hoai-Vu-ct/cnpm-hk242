@@ -200,7 +200,7 @@ exports.checkInQR = async (req, res) => {
 };
 
 // Check-out using QR
-exports.checkOut = async (req, res) => {
+exports.checkOutQR = async (req, res) => {
     const { reservationId } = req.query;
 
     if (!reservationId) {

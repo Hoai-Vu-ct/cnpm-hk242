@@ -11,8 +11,13 @@ VALUES
 -- StudySpace
 INSERT INTO StudySpace (location, status, startTime, endTime)
 VALUES 
-('Building A - Room 101', 'Available', "08:30:00", "18:00:00"),
-('Building B - Room 202', 'Available', "10:00:00", "14:00:00");
+('Building A - Room 101', 'Available', "07:00:00", "09:00:00"),
+('Building A - Room 101', 'Available', "09:00:00", "11:00:00"),
+('Building A - Room 101', 'Available', "11:00:00", "13:00:00"),
+('Building A - Room 101', 'Available', "15:00:00", "17:00:00"),
+('Building B - Room 202', 'Available', "09:00:00", "11:00:00"),
+('Building B - Room 202', 'Available', "11:00:00", "13:00:00"),
+('Building B - Room 202', 'Available', "13:00:00", "15:00:00");
 
 
 

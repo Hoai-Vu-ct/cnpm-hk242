@@ -109,7 +109,7 @@ function HomePage() {
     setIsBooking(true);
     setBookingMessage('');
 
-    const studentId = "1"; // Cần thay bằng logic lấy studentId thực tế
+    const userId = "1"; // Cần thay bằng logic lấy studentId thực tế
 
     const chosenSlotDetails = spacesData.find(s => s.spaceId === parseInt(selectedSpaceId));
 
@@ -123,10 +123,8 @@ function HomePage() {
     const endTimeString = `${todayLocalString} ${chosenSlotDetails.endTime}`;
 
     const reservationData = {
-      studentId: parseInt(studentId),
-      spaceId: parseInt(selectedSpaceId), // spaceId của khung giờ cụ thể
-      startTime: startTimeString, 
-      endTime: endTimeString,
+      userId: parseInt(userId),
+      spaceId: parseInt(selectedSpaceId) // spaceId của khung giờ cụ thể
     };
 
     console.log("Đang gửi dữ liệu đặt phòng:", reservationData);
