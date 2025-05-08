@@ -6,7 +6,7 @@ const spacesController = require('../controllers/spacesController');
 router.get('/', spacesController.getAllSpaces);
 
 // GET /api/spaces/:id
-router.get('/:id', spacesController.getSpaceById);
+router.get('/:spaceId', spacesController.getSpaceById);
 
 // GET /api/spaces/:id/status
 router.get('/:id/status', spacesController.getSpaceStatus);
@@ -15,9 +15,9 @@ router.get('/:id/status', spacesController.getSpaceStatus);
 router.post('/', spacesController.createSpace);
 
 // PUT /api/spaces/:id  (Admin only)
-router.put('/:id', spacesController.updateSpace);
+router.put('/:spaceId', spacesController.updateSpace);
 
 // DELETE /api/spaces/:id  (Admin only)
-router.delete('/:id', spacesController.deleteSpace);
+router.delete('/:spaceId', spacesController.deleteSpace);
 
 module.exports = router;

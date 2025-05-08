@@ -17,8 +17,8 @@ CREATE TABLE User (
 CREATE TABLE StudySpace (
     spaceId INT PRIMARY KEY AUTO_INCREMENT,
     location VARCHAR(100) NOT NULL,
-    startTime DATETIME NOT NULL,
-    endTime DATETIME NOT NULL,
+    startTime TIME NOT NULL,
+    endTime TIME NOT NULL,
     status ENUM('Available', 'Reserved', 'Occupied') NOT NULL DEFAULT 'Available'
 ) ;
 

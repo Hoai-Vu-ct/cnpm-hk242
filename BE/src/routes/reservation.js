@@ -9,7 +9,7 @@ router.post('/', reservationController.createReservation);
 router.post('/cancel', reservationController.cancelReservation);
 
 // Get reservations by student
-router.get('/student/:studentId', reservationController.getReservationsByStudent);
+router.get('/student/:userId', reservationController.getReservationsByStudent);
 
 // Admin: Get all reservations
 router.get('/get-all', reservationController.getAllReservations);
