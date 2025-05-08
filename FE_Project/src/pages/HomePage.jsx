@@ -1,27 +1,13 @@
-import React, { useState, useEffect } from 'react';
-// Thêm useNavigate từ react-router-dom
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-// Định nghĩa các khung giờ với giờ bắt đầu và kết thúc
-const timeSlotOptionsDefinition = [
-  { value: "7-9", label: "7:00 - 9:00", startHour: 7, endHour: 9 },
-  { value: "9-11", label: "9:00 - 11:00", startHour: 9, endHour: 11 },
-  { value: "13-15", label: "13:00 - 15:00", startHour: 13, endHour: 15 },
-  { value: "15-17", label: "15:00 - 17:00", startHour: 15, endHour: 17 },
-  { value: "17-19", label: "17:00 - 19:00", startHour: 17, endHour: 19 }, // 5 PM - 7 PM
-  { value: "19-21", label: "19:00 - 21:00", startHour: 19, endHour: 21 }, // 7 PM - 9 PM
-  { value: "21-23", label: "21:00 - 23:00", startHour: 21, endHour: 23 }, // 9 PM - 11 PM
-];
-
 function HomePage() {
-  // Khởi tạo navigate
-  const navigate = useNavigate(); 
-  const [roomType, setRoomType] = useState('');
-  const [timeSlot, setTimeSlot] = useState('');
+  const navigate = useNavigate();
+  const [roomType, setRoomType] = useState(''); // Vẫn là location, ví dụ "H1 - Room 101"
+  const [selectedSpaceId, setSelectedSpaceId] = useState(''); // Sẽ lưu spaceId của khung giờ cụ thể được chọn
   
   const [allUniqueLocations, setAllUniqueLocations] = useState([]); 
-  const [locationsWithAvailableSpaces, setLocationsWithAvailableSpaces] = useState(new Set());
-  const [spacesData, setSpacesData] = useState([]);
+  const [spacesData, setSpacesData] = useState([]); // Sẽ chứa toàn bộ dữ liệu spaces từ API
 
   const [isLoadingLocations, setIsLoadingLocations] = useState(false);
   const [errorLocations, setErrorLocations] = useState(null);
@@ -33,7 +19,6 @@ function HomePage() {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingMessage, setBookingMessage] = useState('');
 
-  // Sử dụng hàm để lấy ngày địa phương hiện tại
   const getTodayLocalString = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -41,7 +26,7 @@ function HomePage() {
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-  const todayLocalString = getTodayLocalString(); // Sử dụng biến này
+  const todayLocalString = getTodayLocalString();
 
   const fetchReservations = async () => {
     setIsLoadingReservations(true);
@@ -53,17 +38,14 @@ function HomePage() {
       }
       const allReservations = await reservationsResponse.json();
       
-      // Sử dụng todayLocalString ở đây
       const todayStartLocal = new Date(todayLocalString + "T00:00:00");
       const todayEndLocal = new Date(todayLocalString + "T23:59:59.999");
 
       const filteredReservations = allReservations.filter(res => {
-        if (!res || !res.status || !res.startTime || !res.endTime) return false; // Kiểm tra null/undefined
+        if (!res || !res.status || !res.startTime || !res.endTime) return false;
         const resStartUTC = new Date(res.startTime);
         const resEndUTC = new Date(res.endTime);
-        // Kiểm tra status không phân biệt chữ hoa/thường và chỉ lấy các trạng thái active
         const isActiveReservation = res.status.toLowerCase() === 'reserved';
-        // Kiểm tra xem thời gian đặt phòng có nằm trong khoảng thời gian hôm nay không
         return isActiveReservation &&
                (todayStartLocal < resEndUTC && todayEndLocal > resStartUTC);
       });
@@ -77,199 +59,134 @@ function HomePage() {
   };
 
   useEffect(() => {
-    // Hàm này được gọi khi component được mount lần đầu và mỗi khi todayLocalString thay đổi.
-    // Mục đích: Tải dữ liệu ban đầu cần thiết cho trang (danh sách phòng, địa điểm, và các đặt phòng cho ngày hôm nay).
     const fetchInitialData = async () => {
-      // Bắt đầu quá trình tải dữ liệu địa điểm/phòng
       setIsLoadingLocations(true);
       setErrorLocations(null);
       try {
-        // Gọi API để lấy danh sách tất cả các phòng (spaces)
         const spacesResponse = await fetch('http://localhost:5000/api/spaces');
         if (!spacesResponse.ok) {
-          // Nếu API trả về lỗi, ném ra một Error
           throw new Error(`Lỗi tải dữ liệu phòng: ${spacesResponse.status}`);
         }
-        // Chuyển đổi phản hồi từ API sang JSON
         const fetchedSpaces = await spacesResponse.json();
-        // Cập nhật state spacesData với dữ liệu phòng vừa lấy được
         setSpacesData(fetchedSpaces);
-        // Tạo danh sách các địa điểm (location) duy nhất từ dữ liệu phòng và sắp xếp
+        
         const uniqueLocs = [...new Set(fetchedSpaces.map(space => space.location))].sort();
-        setAllUniqueLocations(uniqueLocs); // Cập nhật state cho dropdown chọn địa điểm
+        setAllUniqueLocations(uniqueLocs);
 
-        // Tạo một Set chứa các địa điểm có phòng còn trống ("Available")
-        const availableLocsSet = new Set();
-        fetchedSpaces.forEach(space => {
-          if (space.status === "Available") { // Kiểm tra trạng thái phòng
-            availableLocsSet.add(space.location);
-          }
-        });
-        // Cập nhật state để biết địa điểm nào có phòng trống
-        setLocationsWithAvailableSpaces(availableLocsSet);
       } catch (error) {
-        // Nếu có lỗi trong quá trình fetch hoặc xử lý dữ liệu phòng
         console.error("Không thể tải dữ liệu phòng:", error);
-        setErrorLocations(error.message); // Cập nhật state lỗi
+        setErrorLocations(error.message);
       } finally {
-        // Dù thành công hay thất bại, kết thúc trạng thái loading
         setIsLoadingLocations(false);
       }
-      // Sau khi tải xong dữ liệu phòng, gọi hàm để tải dữ liệu các đặt phòng
       await fetchReservations();
     };
+    fetchInitialData();
+  }, [todayLocalString]);
 
-    fetchInitialData(); // Gọi hàm fetchInitialData
-  }, [todayLocalString]); // Dependency array: Chạy lại useEffect nếu todayLocalString thay đổi
+  // Lấy các khung giờ khả dụng cho một location (roomType) đã chọn
+  const availableTimeSlotsForSelectedRoom = useMemo(() => {
+    if (!roomType || !spacesData.length) return [];
+    return spacesData
+      .filter(space => space.location === roomType)
+      .map(space => ({
+        value: `${space.spaceId}`, // Sử dụng spaceId làm value để định danh slot cụ thể
+        label: `${space.startTime.substring(0,5)} - ${space.endTime.substring(0,5)}`, // Ví dụ: "08:30 - 10:00"
+        spaceId: space.spaceId, // Lưu lại spaceId để dùng khi đặt phòng
+        apiStartTime: space.startTime, // Giờ bắt đầu từ API
+        apiEndTime: space.endTime,     // Giờ kết thúc từ API
+        status: space.status          // Trạng thái của slot này
+      }));
+  }, [roomType, spacesData]);
 
-  // Hàm tiện ích để lấy spaceId dựa vào tên địa điểm (locationName)
-  const getSpaceIdByLocationName = (locationName) => {
-    if (!locationName || !spacesData.length) return null; // Nếu không có tên hoặc không có dữ liệu phòng
-    // Tìm phòng trong spacesData có location trùng với locationName
-    const space = spacesData.find(s => s.location === locationName);
-    return space ? space.spaceId : null; // Trả về spaceId nếu tìm thấy, ngược lại null
-  };
-  
-  // Hàm xử lý sự kiện khi người dùng nhấn nút "Đặt Phòng"
+
   const handleBooking = async () => {
-    // Kiểm tra xem người dùng đã chọn loại phòng và khung giờ chưa
-    if (!roomType || !timeSlot) {
+    if (!roomType || !selectedSpaceId) {
       setBookingMessage("Vui lòng chọn loại phòng và khung giờ.");
-      return; // Dừng thực thi nếu chưa chọn đủ
+      return;
     }
 
-    // Bắt đầu quá trình đặt phòng
     setIsBooking(true);
-    setBookingMessage(''); // Xóa thông báo cũ
+    setBookingMessage('');
 
-    // Lấy studentId (hiện tại đang hardcode, cần thay bằng logic lấy studentId thực tế)
-    const studentId = "1"; 
-    // Lấy spaceId dựa trên roomType (tên địa điểm) đã chọn
-    const spaceId = getSpaceIdByLocationName(roomType);
+    const studentId = "1"; // Cần thay bằng logic lấy studentId thực tế
 
-    // Nếu không tìm thấy spaceId (ví dụ: roomType không hợp lệ)
-    if (!spaceId) {
-      setBookingMessage("Không tìm thấy ID phòng. Vui lòng thử lại.");
-      setIsBooking(false); // Kết thúc trạng thái đặt phòng
-      return;
+    const chosenSlotDetails = spacesData.find(s => s.spaceId === parseInt(selectedSpaceId));
+
+    if (!chosenSlotDetails) {
+        setBookingMessage("Khung giờ đã chọn không hợp lệ hoặc không tìm thấy thông tin.");
+        setIsBooking(false);
+        return;
     }
 
-    // Tìm thông tin chi tiết của khung giờ đã chọn (startHour, endHour)
-    const selectedSlot = timeSlotOptionsDefinition.find(slot => slot.value === timeSlot);
-    if (!selectedSlot) {
-      setBookingMessage("Khung giờ không hợp lệ.");
-      setIsBooking(false);
-      return;
-    }
+    const startTimeString = `${todayLocalString} ${chosenSlotDetails.startTime}`;
+    const endTimeString = `${todayLocalString} ${chosenSlotDetails.endTime}`;
 
-    // Tạo đối tượng Date cho thời gian bắt đầu đặt phòng
-    // Dựa trên ngày địa phương hiện tại (todayLocalString) và giờ bắt đầu của khung giờ đã chọn
-    const startDate = new Date(todayLocalString);
-    startDate.setHours(selectedSlot.startHour, 0, 0, 0); // Đặt giờ, phút, giây, ms theo giờ địa phương
-
-    // Tạo đối tượng Date cho thời gian kết thúc đặt phòng
-    const endDate = new Date(todayLocalString);
-    endDate.setHours(selectedSlot.endHour, 0, 0, 0); // Đặt giờ, phút, giây, ms theo giờ địa phương
-
-    // Hàm định dạng đối tượng Date thành chuỗi "YYYY-MM-DD HH:MM:SS" theo giờ địa phương
-    const formatToLocalDateTimeString = (dateObj) => {
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0'); // Tháng từ 0-11 nên +1
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        const hours = String(dateObj.getHours()).padStart(2, '0'); // Lấy giờ địa phương
-        const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-        const seconds = String(dateObj.getSeconds()).padStart(2, '0');
-        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-    };
-
-    // Chuyển đổi startDate và endDate thành chuỗi để gửi đi
-    // Ví dụ: Nếu chọn 19:00-21:00 ngày 2025-05-08, startTimeString sẽ là "2025-05-08 19:00:00"
-    const startTimeString = formatToLocalDateTimeString(startDate);
-    const endTimeString = formatToLocalDateTimeString(endDate);
-
-    // Chuẩn bị dữ liệu để gửi lên API
     const reservationData = {
-      studentId: parseInt(studentId), // Chuyển studentId sang kiểu số nếu API yêu cầu
-      spaceId: parseInt(spaceId),     // Chuyển spaceId sang kiểu số nếu API yêu cầu
-      startTime: startTimeString,     // Thời gian bắt đầu (chuỗi giờ địa phương)
-      endTime: endTimeString,       // Thời gian kết thúc (chuỗi giờ địa phương)
+      studentId: parseInt(studentId),
+      spaceId: parseInt(selectedSpaceId), // spaceId của khung giờ cụ thể
+      startTime: startTimeString, 
+      endTime: endTimeString,
     };
 
-    // Log dữ liệu sẽ gửi đi để debug (bạn có thể xem trong Console của trình duyệt)
     console.log("Đang gửi dữ liệu đặt phòng:", reservationData);
 
     try {
-      // Gọi API để tạo đặt phòng mới
       const response = await fetch('http://localhost:5000/api/reservations/', { 
-        method: 'POST', // Phương thức POST để tạo mới
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // Thông báo cho server biết body là JSON
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(reservationData), // Chuyển đối tượng reservationData thành chuỗi JSON
+        body: JSON.stringify(reservationData),
       });
-
-      // Chuyển đổi phản hồi từ API sang JSON
       const result = await response.json();
-
-      // Kiểm tra xem API có trả về thành công không (status code 2xx)
       if (response.ok) {
         setBookingMessage(`Đặt phòng thành công! ID Đặt phòng: ${result.reservationId}`);
-        // Reset các lựa chọn sau khi đặt thành công
         setRoomType('');
-        setTimeSlot('');
-        // Tải lại danh sách đặt phòng để cập nhật UI (hiển thị khung giờ vừa đặt là đã được đặt)
+        setSelectedSpaceId(''); // Reset lựa chọn khung giờ
         await fetchReservations(); 
-        // Chuyển hướng đến trang lịch sử đặt phòng
         navigate('/history'); 
       } else {
-        // Nếu API trả về lỗi, hiển thị thông báo lỗi từ API hoặc statusText
         setBookingMessage(`Lỗi đặt phòng: ${result.message || response.statusText}`);
       }
     } catch (error) {
-      // Nếu có lỗi trong quá trình gọi API (ví dụ: lỗi mạng)
       console.error("Lỗi khi gọi API đặt phòng:", error);
       setBookingMessage("Lỗi kết nối khi đặt phòng. Vui lòng thử lại.");
     } finally {
-      // Dù thành công hay thất bại, kết thúc trạng thái đặt phòng
       setIsBooking(false);
     }
   };
-
-  const currentHour = new Date().getHours();
-  const selectedSpaceId = getSpaceIdByLocationName(roomType);
 
   return (
     <>
       <div className="content-top">
         <h2 className="page-title">Trang chủ - Đặt phòng trong ngày</h2>
         <div className="filters-container">
-          {/* Filter Loại Phòng */}
+          {/* Filter Loại Phòng (Location) */}
           <div className="filter-group">
-            <label className="filter-label">Loại Phòng</label>
+            <label className="filter-label">Địa điểm</label>
             <div className="select-wrapper">
               <select 
                 className="filter-select" 
                 value={roomType} 
                 onChange={(e) => {
                   setRoomType(e.target.value);
-                  setTimeSlot(''); 
-                  setBookingMessage(''); // Xóa thông báo khi thay đổi lựa chọn
+                  setSelectedSpaceId(''); // Reset lựa chọn khung giờ khi đổi địa điểm
+                  setBookingMessage('');
                 }}
                 disabled={isLoadingLocations || errorLocations || isBooking}
               >
                 <option value="" disabled>
-                  {isLoadingLocations ? "Đang tải..." : errorLocations ? "Lỗi tải vị trí" : "Chọn Loại Phòng"}
+                  {isLoadingLocations ? "Đang tải..." : errorLocations ? "Lỗi tải vị trí" : "Chọn Địa điểm"}
                 </option>
                 {!isLoadingLocations && !errorLocations && allUniqueLocations.map((location) => {
-                  const isLocationAvailable = locationsWithAvailableSpaces.has(location);
+                  const isLocationGenerallyAvailable = spacesData.some(s => s.location === location && s.status === "Available");
                   return (
                     <option 
                       key={location} 
                       value={location} 
-                      disabled={!isLocationAvailable}
-                      style={!isLocationAvailable ? { color: 'grey' } : {}}
                     >
-                      {location}{!isLocationAvailable ? " (Hết phòng)" : ""}
+                      {location}
                     </option>
                   );
                 })}
@@ -278,81 +195,54 @@ function HomePage() {
             </div>
           </div>
 
-          {/* Filter Khung giờ */}
+          {/* Filter Khung giờ (dựa trên startTime, endTime từ API) */}
           <div className="filter-group">
             <label className="filter-label">Khung giờ</label>
             <div className="select-wrapper">
               <select 
                 className="filter-select" 
-                value={timeSlot} 
+                value={selectedSpaceId} // Value giờ là spaceId của slot
                 onChange={(e) => {
-                  const newTimeSlotValue = e.target.value;
-                  setBookingMessage(''); // Xóa thông báo khi thay đổi lựa chọn
-                  if (newTimeSlotValue === "") { 
-                    setTimeSlot("");
-                    return;
-                  }
-                  const selectedOptionDef = timeSlotOptionsDefinition.find(opt => opt.value === newTimeSlotValue);
-                  if (!selectedOptionDef) return;
-
-                  const isPast = currentHour >= selectedOptionDef.endHour;
-                  let isBooked = false;
-                  if (selectedSpaceId && reservationsForToday.length > 0) {
-                    const slotStartLocal = new Date(todayLocalString);
-                    slotStartLocal.setHours(selectedOptionDef.startHour, 0, 0, 0);
-                    const slotEndLocal = new Date(todayLocalString);
-                    slotEndLocal.setHours(selectedOptionDef.endHour, 0, 0, 0);
-
-                    isBooked = reservationsForToday.some(res => {
-                      if (res.spaceId !== selectedSpaceId) return false;
-                      const resStartUTC = new Date(res.startTime);
-                      const resEndUTC = new Date(res.endTime);
-                      return slotStartLocal < resEndUTC && slotEndLocal > resStartUTC;
-                    });
-                  }
-                  if (!isPast && !isBooked) {
-                    setTimeSlot(newTimeSlotValue);
-                  } else {
-                    // Không setTimeSlot nếu không hợp lệ, select sẽ không thay đổi
-                    setBookingMessage("Khung giờ đã chọn không khả dụng.");
-                  }
+                  setSelectedSpaceId(e.target.value);
+                  setBookingMessage('');
                 }}
-                disabled={isLoadingReservations || !roomType || isBooking} 
+                disabled={isLoadingReservations || !roomType || isBooking || availableTimeSlotsForSelectedRoom.length === 0} 
               >
                 <option value="" disabled>
-                  {isLoadingReservations ? "Đang tải..." : !roomType ? "Chọn loại phòng trước" : "Chọn Khung Giờ"}
+                  {isLoadingReservations ? "Đang tải..." : 
+                   !roomType ? "Chọn địa điểm trước" : 
+                   availableTimeSlotsForSelectedRoom.length === 0 ? "Không có khung giờ" : 
+                   "Chọn Khung Giờ"}
                 </option>
-                {timeSlotOptionsDefinition.map(option => {
-                  const isPast = currentHour >= option.endHour;
+                {availableTimeSlotsForSelectedRoom.map(slot => {
                   let isBooked = false;
-                  let disabledText = "";
-
-                  if (selectedSpaceId && reservationsForToday.length > 0 && !isLoadingReservations) {
-                    const slotStartLocal = new Date(todayLocalString);
-                    slotStartLocal.setHours(option.startHour, 0, 0, 0);
-                    const slotEndLocal = new Date(todayLocalString);
-                    slotEndLocal.setHours(option.endHour, 0, 0, 0);
+                  if (reservationsForToday.length > 0 && !isLoadingReservations) {
+                    const slotStartDateTime = new Date(`${todayLocalString}T${slot.apiStartTime}`);
+                    const slotEndDateTime = new Date(`${todayLocalString}T${slot.apiEndTime}`);
 
                     isBooked = reservationsForToday.some(res => {
-                      if (res.spaceId !== selectedSpaceId) return false;
+                      if (res.spaceId !== slot.spaceId) return false; 
                       const resStartUTC = new Date(res.startTime);
                       const resEndUTC = new Date(res.endTime);
-                      return slotStartLocal < resEndUTC && slotEndLocal > resStartUTC;
+                      return slotStartDateTime < resEndUTC && slotEndDateTime > resStartUTC;
                     });
                   }
                   
-                  const isDisabled = isPast || isBooked || !roomType; 
-                  if (isPast) disabledText = " (Đã qua)";
-                  else if (isBooked) disabledText = " (Đã đặt)";
+                  const isDisabledByStatus = slot.status !== "Available"; 
+                  const isDisabled = isBooked || isDisabledByStatus || !roomType; 
+                  let disabledText = "";
+
+                  if (isBooked) disabledText = " (Đã đặt)";
+                  else if (isDisabledByStatus) disabledText = ` (${slot.status})`;
 
                   return (
                     <option 
-                      key={option.value} 
-                      value={option.value} 
+                      key={slot.value} 
+                      value={slot.value} 
                       disabled={isDisabled}
                       style={isDisabled ? { color: 'grey', textDecoration: 'line-through' } : {}}
                     >
-                      {option.label}{disabledText}
+                      {slot.label}{disabledText}
                     </option>
                   );
                 })}
@@ -368,7 +258,7 @@ function HomePage() {
         <button 
           className="booking-btn" 
           onClick={handleBooking}
-          disabled={!roomType || !timeSlot || isLoadingLocations || isLoadingReservations || isBooking} 
+          disabled={!roomType || !selectedSpaceId || isLoadingLocations || isLoadingReservations || isBooking} 
         >
           {isBooking ? 'Đang xử lý...' : 'Đặt Phòng'}
         </button>
