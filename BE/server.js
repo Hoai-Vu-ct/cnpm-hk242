@@ -5,18 +5,22 @@ const session = require('express-session');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', // Thay bằng URL của FE
+  credentials: true, // Cho phép gửi cookie
+}));
 app.use(express.json());
 
 app.use(session({
-    secret: 'abcxyz',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { 
-      secure: false, 
-      maxAge: 30 * 24 * 60 * 60 * 1000
-    } 
-  }));
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: false, // Đặt thành true nếu dùng HTTPS
+    maxAge: 24 * 60 * 60 * 1000, // Thời gian sống của cookie (1 ngày)
+  },
+}));
 
 // Automatic cron jobs
 const { startReminderJob } = require('./src/jobs/reminderJob.js');

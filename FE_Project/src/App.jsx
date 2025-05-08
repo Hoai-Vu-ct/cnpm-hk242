@@ -4,8 +4,12 @@ import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import CheckinPage from './pages/CheckinPage';
 import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 import RoomPage from './pages/RoomPage';
 import HistoryPage from './pages/HistoryPage';
+import AccountPage from './pages/AccountPage'; // Import trang AccountPage
+import ForgotPage from './pages/ForgotPage';
+
 // Import các trang khác nếu có
 
 // import HistoryPage from './pages/HistoryPage';
@@ -17,6 +21,8 @@ function App() {
       <Routes>
         {/* Route cho trang Login (không dùng Layout) */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/sign_up" element={<SignupPage />} />
+        <Route path="/forgot-password" element={<ForgotPage />} />
 
         {/* Các routes dùng Layout chung (có Header/Footer) */}
         <Route path="/" element={<Layout />}>
@@ -28,6 +34,7 @@ function App() {
         <Route path="room" element={<RoomPage />} />
         
         <Route path="history" element={<HistoryPage />} />
+        <Route path="account" element={<AccountPage />} /> {/* Thêm route cho AccountPage */}
 
         </Route>
 
