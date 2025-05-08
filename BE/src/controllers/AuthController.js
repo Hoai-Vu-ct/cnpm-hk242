@@ -2,6 +2,7 @@ const AuthService = require('../service/AuthService')
 
 class AuthController {
     check = async (req, res) => {
+        
         try {
             const result = await AuthService.check(req);
             return res.status(200).send(result);
