@@ -16,6 +16,8 @@ CREATE TABLE User (
 CREATE TABLE StudySpace (
     spaceId INT PRIMARY KEY AUTO_INCREMENT,
     location VARCHAR(100) NOT NULL,
+    startTime DATETIME NOT NULL,
+    endTime DATETIME NOT NULL,
     status ENUM('Available', 'Reserved', 'Occupied') NOT NULL DEFAULT 'Available'
 ) ;
 
@@ -25,6 +27,8 @@ CREATE TABLE Reservation (
     spaceId INT NOT NULL,
     startTime DATETIME NOT NULL,
     endTime DATETIME NOT NULL,
+    checkedInTime DATETIME NULL,
+    checkOutTime DATETIME NULL,
     status ENUM('Reserved', 'CheckedIn', 'Completed', 'Cancelled', 'AutoReleased') NOT NULL DEFAULT 'Reserved',
     reminded BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE,
@@ -55,3 +59,11 @@ CREATE TABLE Notification (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (userId) REFERENCES User(userId) ON DELETE CASCADE
 );
+
+ALTER TABLE studyspace
+ADD COLUMN startTime DATETIME NULL,
+ADD COLUMN endTime DATETIME NULL;
+
+ALTER TABLE reservation
+ADD COLUMN checkedInTime DATETIME NULL,
+ADD COLUMN checkedOutTime DATETIME NULL;

@@ -45,8 +45,17 @@ exports.createSpace = async (req, res) => {
     }*/
 
     try {
-        const { location } = req.body;
-        const [result] = await db.query('INSERT INTO StudySpace (location) VALUES (?)', [location]);
+        const { location, startTime, endTime } = req.body;
+
+        if (!location || !startTime || !endTime) {
+            return res.status(400).json({ error: 'Missing location, startTime, or endTime' });
+        }
+
+        const [result] = await db.query(
+            'INSERT INTO StudySpace (location, startTime, endTime) VALUES (?, ?, ?)',
+            [location, startTime, endTime]
+        );
+
         const newSpaceId = result.insertId;
 
         // Fetch the newly created space
@@ -65,10 +74,17 @@ exports.updateSpace = async (req, res) => {
     }
 
     try {
-        const { location, status } = req.body;
+        const { location, status, startTime, endTime } = req.body;
+
         const [result] = await db.query(
-            'UPDATE StudySpace SET location = COALESCE(?, location), status = COALESCE(?, status) WHERE spaceId = ?',
-            [location, status, req.params.id]
+            `UPDATE StudySpace 
+             SET 
+                location = COALESCE(?, location),
+                status = COALESCE(?, status),
+                startTime = COALESCE(?, startTime),
+                endTime = COALESCE(?, endTime)
+             WHERE spaceId = ?`,
+            [location, status, startTime, endTime, req.params.id]
         );
 
         if (result.affectedRows > 0) {

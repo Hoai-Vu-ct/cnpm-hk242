@@ -9,10 +9,10 @@ VALUES
 
 
 -- StudySpace
-INSERT INTO StudySpace (location, status)
+INSERT INTO StudySpace (location, status, startTime, endTime)
 VALUES 
-('Building A - Room 101', 'Available'),
-('Building B - Room 202', 'Available');
+('Building A - Room 101', 'Available', "08:30:00", "18:00:00"),
+('Building B - Room 202', 'Available', "10:00:00", "14:00:00");
 
 
 -- Reservation

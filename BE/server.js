@@ -11,6 +11,8 @@ const { startReminderJob } = require('./src/jobs/reminderJob.js');
 const { autoReleaseRooms } = require('./src/jobs/autoreleaseJob.js');
 
 // Routes
+const authRoutes = require('./src/routes/AuthRouter.js')
+const userRoutes = require('./src/routes/UserRouter.js')
 const reservationsRoutes = require('./src/routes/reservation.js');
 const spacesRoutes = require('./src/routes/spaces.js');
 const checkinRoutes = require('./src/routes/checkin.js');
@@ -18,6 +20,8 @@ const notificationsRoutes = require('./src/routes/notification.js');
 const iotRoutes = require('./src/routes/iot.js');
 
 // Mounting routes
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes); 
 app.use('/api/reservations', reservationsRoutes);
 app.use('/api/spaces', spacesRoutes);
 app.use('/api/', checkinRoutes);
