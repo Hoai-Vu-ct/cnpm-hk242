@@ -15,7 +15,7 @@ function CheckinPage() {
   const generateQrData = useCallback(() => {
     const timestamp = Date.now();
     // Lấy hostname động từ URL mà frontend đang được truy cập
-    const dynamicHostname = "192.168.1.16"; 
+    const dynamicHostname = "live-newt-neatly.ngrok-free.app"; 
 
     if (reservationId === "N/A" || userId === "N/A") {
       return "Lỗi: Thiếu thông tin đặt phòng hoặc người dùng để tạo QR.";
@@ -23,7 +23,7 @@ function CheckinPage() {
 
     const backendPort = 5000; // Port của backend server
     // Tạo URL cho QR code sử dụng HTTP, hostname động, và port backend
-    const qrUrl = `http://${dynamicHostname}:${backendPort}/api/checkin/qr?reservationId=${reservationId}&userId=${userId}`;
+    const qrUrl = `https://${dynamicHostname}/api/checkin/qr?reservationId=${reservationId}&userId=${userId}`;
     
     console.log(`URL được tạo cho QR (từ window.location.hostname): ${qrUrl}`); 
     return qrUrl;

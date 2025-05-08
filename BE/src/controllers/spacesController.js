@@ -13,7 +13,7 @@ exports.getAllSpaces = async (req, res) => {
 // 2. Get space by ID
 exports.getSpaceById = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM StudySpace WHERE spaceId = ?', [req.params.id]);
+        const [rows] = await db.query('SELECT * FROM StudySpace WHERE spaceId = ?', [req.params.spaceId]);
         if (rows.length > 0) {
             res.json(rows[0]);
         } else {
@@ -27,7 +27,7 @@ exports.getSpaceById = async (req, res) => {
 // 3. Get space status only
 exports.getSpaceStatus = async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT spaceId, status FROM StudySpace WHERE spaceId = ?', [req.params.id]);
+        const [rows] = await db.query('SELECT spaceId, status FROM StudySpace WHERE spaceId = ?', [req.params.spaceId]);
         if (rows.length > 0) {
             res.json(rows[0]);
         } else {
@@ -68,10 +68,10 @@ exports.createSpace = async (req, res) => {
 
 // 5. Update space
 exports.updateSpace = async (req, res) => {
-    // Restrict to admin-only 
-    if (req.user?.type !== 'Admin') {
-        return res.status(403).json({ error: 'Access denied. Admins only.' });
-    }
+    // // Restrict to admin-only 
+    // if (req.user?.type !== 'Admin') {
+    //     return res.status(403).json({ error: 'Access denied. Admins only.' });
+    // }
 
     try {
         const { location, status, startTime, endTime } = req.body;
@@ -96,7 +96,7 @@ exports.updateSpace = async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
-};
+};8
 
 // 6. Delete space
 exports.deleteSpace = async (req, res) => {
