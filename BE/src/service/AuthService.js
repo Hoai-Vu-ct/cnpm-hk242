@@ -3,6 +3,31 @@ const db = require('../utils/db');
 const nodemailer = require("nodemailer");
 
 class AuthService {
+    getSession = async (req) => {
+        return new Promise((resolve, reject) => {
+            try {
+                if (req.session && req.session.user) {
+                    resolve({
+                        status: true,
+                        message: 'Người dùng đã đăng nhập',
+                        user: req.session.user, // Trả về thông tin người dùng từ session
+                    });
+                } else {
+                    resolve({
+                        status: false,
+                        message: 'Người dùng chưa đăng nhập',
+                    });
+                }
+            } catch (error) {
+                reject({
+                    status: false,
+                    message: 'Lỗi khi lấy thông tin session',
+                    error: error.message,
+                });
+            }
+        });
+    };
+
     check = async (req) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -94,6 +119,7 @@ class AuthService {
                     id: user.CCCD,
                     name: user.username,
                     email: user.email,
+                    userid: user.userId
                 };
                 resolve({
                     status: true,

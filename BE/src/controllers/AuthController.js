@@ -1,6 +1,19 @@
 const AuthService = require('../service/AuthService')
 
 class AuthController {
+    getSession = async (req, res) => {
+        try {
+            const result = await AuthService.getSession(req);
+            return res.status(200).send(result);
+        } catch (err) {
+            return res.status(500).json({
+                status: false,
+                message: 'Lỗi khi lấy thông tin session',
+                error: err.message,
+            });
+        }
+    };
+    
     check = async (req, res) => {
         
         try {
