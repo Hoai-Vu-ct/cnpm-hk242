@@ -58,7 +58,6 @@ function Header() {
         <nav className="nav-menu">
           <NavLink to="/" end>Trang chủ</NavLink>
           <NavLink to="/room">Không gian phòng học</NavLink>
-          <NavLink to="/checkin">Check in</NavLink>
           <NavLink to="/history">Lịch sử đặt phòng</NavLink>
         </nav>
         <div className="user-profile">

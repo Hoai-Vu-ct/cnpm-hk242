@@ -20,6 +20,8 @@ function HomePage() {
   const [isBooking, setIsBooking] = useState(false);
   const [bookingMessage, setBookingMessage] = useState('');
 
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false);
+
   const getTodayLocalString = () => {
     const now = new Date();
     const year = now.getFullYear();
@@ -70,6 +72,30 @@ function HomePage() {
       }
     };
     fetchSpacesAndLocations();
+  }, []);
+
+  useEffect(() => {
+    // Fetch session data to check if the user is logged in
+    const checkUserLoginStatus = async () => {
+      try {
+        const sessionResponse = await fetch('http://localhost:5000/auth/session', {
+          method: 'GET',
+          credentials: 'include', // Include cookies
+        });
+
+        if (!sessionResponse.ok) {
+          throw new Error('Failed to fetch session data');
+        }
+
+        const sessionData = await sessionResponse.json();
+        setIsUserLoggedIn(sessionData.status && sessionData.user); 
+      } catch (error) {
+        console.error('Error checking login status:', error);
+        setIsUserLoggedIn(false); 
+      }
+    };
+
+    checkUserLoginStatus();
   }, []);
 
   useEffect(() => {
@@ -128,10 +154,29 @@ function HomePage() {
       return;
     }
 
+    if (!isUserLoggedIn) {
+      setBookingMessage('Bạn cần đăng nhập để đặt phòng.');
+      return;
+    }
+
     setIsBooking(true);
     setBookingMessage('');
 
-    const userId = "1";
+    const sessionResponse = await fetch('http://localhost:5000/auth/session', {
+      method: 'GET',
+      credentials: 'include', 
+    });
+
+    if (!sessionResponse.ok) {
+        throw new Error('Không thể lấy thông tin người dùng.');
+    }
+
+    const sessionData = await sessionResponse.json();
+    if (!sessionData.status || !sessionData.user) {
+        throw new Error('Người dùng chưa đăng nhập.');
+    }
+
+    const userId = sessionData.user.userid;
 
     const chosenSlotDetails = spacesData.find(s => s.spaceId === parseInt(selectedSpaceId));
 
@@ -331,13 +376,19 @@ function HomePage() {
       </div>
       <div className="spacer"></div>
       <div className="booking-btn-container">
-        <button 
-          className="booking-btn" 
-          onClick={handleBooking}
-          disabled={!roomType || !selectedDate || !selectedSpaceId || isLoadingLocations || isLoadingReservations || isBooking} 
-        >
-          {isBooking ? 'Đang xử lý...' : 'Đặt Phòng'}
-        </button>
+        {isUserLoggedIn ? (
+          <button 
+            className="booking-btn" 
+            onClick={handleBooking}
+            disabled={!roomType || !selectedDate || !selectedSpaceId || isLoadingLocations || isLoadingReservations || isBooking} 
+          >
+            {isBooking ? 'Đang xử lý...' : 'Đặt Phòng'}
+          </button>
+        ) : (
+          <p style={{ color: 'red', textAlign: 'center', marginTop: '10px' }}>
+            Bạn cần đăng nhập để đặt phòng.
+          </p>
+        )}
       </div>
     </>
   );

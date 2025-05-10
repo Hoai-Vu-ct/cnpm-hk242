@@ -13,12 +13,29 @@ const HistoryPage = () => {
     const fetchData = async () => {
       setIsLoading(true);
       setError(null);
+
       try {
+        const sessionResponse = await fetch('http://localhost:5000/auth/session', {
+          method: 'GET',
+          credentials: 'include', 
+        });
+
+        if (!sessionResponse.ok) {
+           throw new Error('Không thể lấy thông tin người dùng.');
+        }
+
+        const sessionData = await sessionResponse.json();
+        if (!sessionData.status || !sessionData.user) {
+            throw new Error('Người dùng chưa đăng nhập.');
+        }
+
+        const userId = sessionData.user.userid; 
+
         const [reservationsResponse, spacesResponse] = await Promise.all([
-          fetch("http://localhost:5000/api/reservations/get-all"),
+          fetch(`http://localhost:5000/api/reservations/student/${userId}`),
           fetch("http://localhost:5000/api/spaces"),
         ]);
-
+        
         if (!reservationsResponse.ok) {
           throw new Error(
             `Lỗi tải lịch sử đặt phòng: ${reservationsResponse.status}`
@@ -33,6 +50,8 @@ const HistoryPage = () => {
 
         setReservations(reservationsData);
         setSpaces(spacesData);
+
+        console.log(reservationsData);
       } catch (err) {
         setError(err.message);
         console.error("Lỗi fetch dữ liệu:", err);
@@ -92,7 +111,7 @@ const HistoryPage = () => {
 
   const completedBookings = useMemo(() => {
     return processedBookings.filter(
-      (booking) => booking.originalStatus === "cancelled" || booking.originalStatus === "completed" // Thêm 'completed' nếu có
+      (booking) => booking.originalStatus === "cancelled" || booking.originalStatus === "completed" || booking.originalStatus === "autoreleased"// Thêm 'completed' nếu có
     );
   }, [processedBookings]);
 
@@ -134,6 +153,8 @@ const HistoryPage = () => {
       statusContent = <span>Đã hủy phòng</span>;
     } else if (booking.originalStatus === "completed") {
       statusContent = <span>Đã hoàn thành</span>;
+    } else if (booking.originalStatus === "autoreleased"){
+      statusContent = <span>Tự động hủy</span>
     } else {
       statusContent = <span>{booking.originalStatus}</span>;
     }

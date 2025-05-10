@@ -20,13 +20,27 @@ const RoomPage = () => {
   const [checkoutMessage, setCheckoutMessage] = useState('');
 
   useEffect(() => {
-    const studentId = HARDCODED_STUDENT_ID; // Sử dụng studentId đã fix cứng
-
     const fetchCheckedInReservation = async () => {
       setIsLoading(true);
       setFetchError(null);
       setCurrentReservation(null); 
       try {
+        const sessionResponse = await fetch('http://localhost:5000/auth/session', {
+          method: 'GET',
+          credentials: 'include', 
+        });
+
+        if (!sessionResponse.ok) {
+           throw new Error('Không thể lấy thông tin người dùng.');
+        }
+
+        const sessionData = await sessionResponse.json();
+        if (!sessionData.status || !sessionData.user) {
+            throw new Error('Người dùng chưa đăng nhập.');
+        }
+
+        const studentId = sessionData.user.userid;
+
         const response = await fetch(`${NGROK_BASE_URL}/api/reservations/student/${studentId}`);
         if (!response.ok) {
           const errorData = await response.text();
@@ -58,7 +72,7 @@ const RoomPage = () => {
 
   // Sử dụng useMemo để chỉ tính toán lại khi currentReservation hoặc passedRoomName thay đổi
   const roomDisplayName = useMemo(() => passedRoomName || currentReservation?.space?.location || "Không rõ phòng", [passedRoomName, currentReservation]);
-  const studentName = useMemo(() => currentReservation?.user?.name || `Sinh viên ID ${HARDCODED_STUDENT_ID}`, [currentReservation]);
+  const studentName = useMemo(() => currentReservation?.user?.username || `Sinh viên ID ${currentReservation?.user?.userId}`, [currentReservation]);
 
   const formatTime = (dateString) => {
     if (!dateString) return "N/A";
@@ -154,7 +168,7 @@ const RoomPage = () => {
   if (isLoading) {
     return (
       <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
-        <h2>Đang tải thông tin phòng cho sinh viên ID {HARDCODED_STUDENT_ID}...</h2>
+        <h2>Đang tải thông tin phòng cho sinh viên...</h2>
       </div>
     );
   }
@@ -163,7 +177,7 @@ const RoomPage = () => {
     return (
       <div className="main-content" style={{ textAlign: 'center', padding: '50px' }}>
         <h2>{fetchError ? "Lỗi tải thông tin phòng" : "Không tìm thấy phòng"}</h2>
-        <p>{fetchError || `Không có phòng nào đang "checkedin" cho sinh viên ID ${HARDCODED_STUDENT_ID}.`}</p>
+        <p>{fetchError || `Không có phòng nào đang checked-in cho sinh viên.`}</p>
         <Link to="/">Quay lại trang chủ</Link><br/>
         <Link to="/checkin">Thử check-in một phòng</Link>
       </div>
