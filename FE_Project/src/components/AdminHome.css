@@ -1,0 +1,116 @@
+/* Nền tổng thể */
+body, #root {
+  background: #f7faf9;
+}
+
+/* Khối nội dung chính */
+.content-top {
+  background: #fff;
+  padding: 130px 24px ;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  margin: 40px auto ;
+  max-width: 98vw;
+  width: 96%;
+}
+
+/* Tiêu đề */
+.page-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #2d3748;
+  text-align: center;
+}
+
+/* Bộ lọc */
+.filters-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 24px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 220px;
+  margin-bottom: 0;
+}
+
+.filter-label {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: #4a5568;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.filter-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  outline: none;
+  transition: border 0.2s;
+  background: #fff;
+}
+
+.filter-input:focus {
+  border-color: #3182ce;
+}
+
+/* Spacer */
+.spacer {
+  height: 48px;
+}
+
+/* Nút Thêm Phòng */
+.booking-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+  width: 100%;
+}
+
+.booking-btn {
+  background: #2986d9;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 600;
+  padding: 16px 0;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 40%;
+  min-width: 220px;
+  margin-right: 2%;
+}
+
+.booking-btn:hover {
+  background: #2563eb;
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 900px) {
+  .filters-container {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .booking-btn {
+    width: 100%;
+    margin-right: 0;
+  }
+  .content-top {
+    width: 99%;
+    padding: 18px 6px 16px 6px;
+  }
+}

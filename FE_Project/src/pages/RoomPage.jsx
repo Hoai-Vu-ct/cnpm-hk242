@@ -1,15 +1,12 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 
-const NGROK_BASE_URL = 'http://localhost:5000';
-const HARDCODED_STUDENT_ID = 1; // Fix tạm studentId là 1
+const BASE_URL = 'http://localhost:5000';
+const HARDCODED_STUDENT_ID = 1; 
 
 const RoomPage = () => {
   const location = useLocation(); // Vẫn giữ để có thể lấy passedRoomName nếu cần
   const navigate = useNavigate();
-
-  // Lấy passedRoomName từ state nếu có, dùng làm fallback hoặc ưu tiên hiển thị tên
-  const { roomName: passedRoomName } = location.state || {};
 
   const [currentReservation, setCurrentReservation] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -18,6 +15,7 @@ const RoomPage = () => {
   const [remainingTime, setRemainingTime] = useState(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutMessage, setCheckoutMessage] = useState('');
+  const [studentName, setStudentName] = useState(null); 
 
   useEffect(() => {
     const fetchCheckedInReservation = async () => {
@@ -40,8 +38,9 @@ const RoomPage = () => {
         }
 
         const studentId = sessionData.user.userid;
+        setStudentName(sessionData.user.name); 
 
-        const response = await fetch(`${NGROK_BASE_URL}/api/reservations/student/${studentId}`);
+        const response = await fetch(`${BASE_URL}/api/reservations/student/${studentId}`);
         if (!response.ok) {
           const errorData = await response.text();
           throw new Error(`Lỗi ${response.status} khi tải danh sách đặt phòng: ${errorData}`);
@@ -70,9 +69,6 @@ const RoomPage = () => {
 
   }, []); // Chạy một lần khi component mount
 
-  // Sử dụng useMemo để chỉ tính toán lại khi currentReservation hoặc passedRoomName thay đổi
-  const roomDisplayName = useMemo(() => passedRoomName || currentReservation?.space?.location || "Không rõ phòng", [passedRoomName, currentReservation]);
-  const studentName = useMemo(() => currentReservation?.user?.username || `Sinh viên ID ${currentReservation?.user?.userId}`, [currentReservation]);
 
   const formatTime = (dateString) => {
     if (!dateString) return "N/A";
@@ -139,7 +135,7 @@ const RoomPage = () => {
     setCheckoutMessage('');
 
     try {
-      const response = await fetch(`${NGROK_BASE_URL}/api/checkout`, {
+      const response = await fetch(`${BASE_URL}/api/checkout`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +189,7 @@ const RoomPage = () => {
       </div>
 
       <h2 className="page-title">
-        Chào mừng đến với phòng {roomDisplayName}, {studentName}!
+        Chào mừng đến với phòng của bạn, {studentName}!
       </h2>
 
       <div className="roompage-content">

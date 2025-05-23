@@ -19,6 +19,10 @@ VALUES
 ('Building B - Room 202', "11:00:00", "13:00:00"),
 ('Building B - Room 202', "13:00:00", "15:00:00");
 
+INSERT INTO StudySpace (location, startTime, endTime)
+VALUES 
+('Building A - Room 101', "20:00:00", "23:00:00");
+
 
 
 -- Reservation

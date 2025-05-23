@@ -29,8 +29,14 @@ function LoginPage() {
       const data = await response.json();
       console.log('Đăng nhập thành công:', data);
 
-      // Chuyển hướng đến trang chủ
-      navigate('/');
+      // Nếu email là admin@admin.com thì chuyển hướng đến /admin
+      if (data.email && data.email.toLowerCase() === 'admin@admin.com') {
+        console.log('Admin logged in');
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+      
     } catch (err) {
       setError(err.message);
     } finally {
